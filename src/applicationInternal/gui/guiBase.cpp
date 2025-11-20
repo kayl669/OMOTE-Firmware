@@ -184,7 +184,7 @@ int tabviewHeight;
 int labelsPositionTop;
 
 void setMainWidgetsHeightAndPosition() {
-  panelHeight          = 30;
+  panelHeight          = 0;
   memoryUsageBarTop    = 0;
   memoryUsageBarHeight = getShowMemoryUsage() ? 14 : 0;
   statusbarTop         = memoryUsageBarTop + memoryUsageBarHeight;

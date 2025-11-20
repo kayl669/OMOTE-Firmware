@@ -3,15 +3,20 @@
 #include "applicationInternal/scenes/sceneRegistry.h"
 #include "applicationInternal/commandHandler.h"
 // devices
-#include "devices/AVreceiver/device_yamahaAmp/device_yamahaAmp.h"
-#include "devices/misc/device_smarthome/gui_smarthome.h"
+#include "devices/AVreceiver/device_boseAmp/device_boseAmp.h"
+//#include "devices/AVreceiver/device_yamahaAmp/device_yamahaAmp.h"
+//#include "devices/misc/device_smarthome/gui_smarthome.h"
+#include "devices/TV/device_sonyTV/device_sonyTV.h"
+#include "devices/misc/device_home/device_home.h"
+#include "devices/misc/device_home/gui_home.h"
 // scenes
 #include "scene__default.h"
+
 #include "scenes/scene_allOff.h"
 #include "scenes/scene_TV.h"
-#include "scenes/scene_fireTV.h"
-#include "scenes/scene_chromecast.h"
-#include "scenes/scene_appleTV.h"
+//#include "scenes/scene_fireTV.h"
+//#include "scenes/scene_chromecast.h"
+//#include "scenes/scene_appleTV.h"
 
 uint16_t SCENE_SELECTION;
 std::string scene_name_selection = "sceneSelection";
@@ -48,15 +53,15 @@ void register_scene_defaultKeys(void) {
   
   key_commands_short_default = {
                                                                                                              {KEY_OFF,   SCENE_ALLOFF_FORCE},
-    {KEY_STOP,  GUI_SMARTHOME_ACTIVATE},/*{KEY_REWI,  COMMAND_UNKNOWN  }, {KEY_PLAY,  COMMAND_UNKNOWN  },    {KEY_FORW,  COMMAND_UNKNOWN  },*/
-  /*{KEY_CONF,  COMMAND_UNKNOWN  },                                                                          {KEY_INFO,  COMMAND_UNKNOWN  },*/
-                                                     /*  {KEY_UP,    COMMAND_UNKNOWN  },*/
-                      {KEY_LEFT,  GUI_PREV  },       /*  {KEY_OK,    COMMAND_UNKNOWN  },*/  {KEY_RIGHT, GUI_NEXT  },
-                                                     /*  {KEY_DOWN,  COMMAND_UNKNOWN  },*/
-    {KEY_BACK,  SCENE_SELECTION  },                                                                        /*{KEY_SRC,   COMMAND_UNKNOWN  },*/
-    {KEY_VOLUP, YAMAHA_VOL_PLUS  },                      {KEY_MUTE,  YAMAHA_MUTE_TOGGLE},                  /*{KEY_CHUP,  COMMAND_UNKNOWN  },*/
-    {KEY_VOLDO, YAMAHA_VOL_MINUS },                      {KEY_REC,   SCENE_BACK_TO_PREVIOUS_GUI_LIST  },   /*{KEY_CHDOW, COMMAND_UNKNOWN  },*/
-    {KEY_RED,   SCENE_TV_FORCE   },    {KEY_GREEN, SCENE_FIRETV_FORCE},  {KEY_YELLO, SCENE_CHROMECAST_FORCE},{KEY_BLUE,  SCENE_APPLETV_FORCE},
+    {KEY_STOP,  SONY_STOP        },  {KEY_REWI,  SONY_REWIND      },  {KEY_PLAY,   SONY_PAUSE       },  {KEY_FORW,   SONY_FASTFORWARD },
+    {KEY_CONF,  SONY_HOME        },                                                                    {KEY_INFO,  SONY_INFO       },
+                                                     {KEY_UP,    SONY_UP           },
+                        {KEY_LEFT,  SONY_LEFT    },  {KEY_OK,    SONY_SELECT       },    {KEY_RIGHT, SONY_RIGHT    },
+                                                     {KEY_DOWN,  SONY_DOWN         },
+    {KEY_BACK,   SONY_RETURN    },                                                                    {KEY_SRC,   SONY_MENU     },
+    {KEY_VOLUP, BOSE_VOL_UP  },                      {KEY_MUTE,  BOSE_MUTE},                  {KEY_CHUP,  SONY_CHANNEL_UP  },
+    {KEY_VOLDO, BOSE_VOL_DOWN },                      {KEY_REC,   SCENE_BACK_TO_PREVIOUS_GUI_LIST  },   {KEY_CHDOW, SONY_CHANNEL_DOWN  },
+    {KEY_RED,   HOME_LIGHT_LIVING_ROOM   },    {KEY_GREEN, HOME_LIGHT_DINING_ROOM},  {KEY_YELLO, HOME_LIGHT_KITCHEN},{KEY_BLUE,  HOME_LIGHT_OFF},
   };
   
   key_commands_long_default = {

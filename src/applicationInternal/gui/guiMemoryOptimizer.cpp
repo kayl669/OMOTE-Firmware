@@ -553,7 +553,7 @@ void gui_memoryOptimizer_notifyAndClear(lv_obj_t** tabview, lv_obj_t** panel, lv
   // 2. clear current tabview and save gui_list_index_previous (needed for swipe)
   clear_tabview(*tabview, gui_state);
   // 3. clear current panel for page indicator
-  clear_panel(*panel, *img1, *img2);
+  //clear_panel(*panel, *img1, *img2);
 
 }
 
@@ -722,12 +722,12 @@ void gui_memoryOptimizer_doContentCreation(lv_obj_t** tabview, lv_obj_t** panel,
   // Set the tab we swiped to as active
   doTabCreation_strategyMax3(*tabview, gui_state);
 
-  // Create the panel for the page indicator. Panel itself takes about 2136 bytes for three tabs.
-  lv_obj_t* newPanel = create_panel();
-  *panel = newPanel;
-  *img1 = lv_img_create(lv_scr_act());
-  *img2 = lv_img_create(lv_scr_act());
-  fillPanelWithPageIndicator_strategyMax3(*panel, *img1, *img2, gui_state);
+  //// Create the panel for the page indicator. Panel itself takes about 2136 bytes for three tabs.
+  //lv_obj_t* newPanel = create_panel();
+  //*panel = newPanel;
+  //*img1 = lv_img_create(lv_scr_act());
+  //*img2 = lv_img_create(lv_scr_act());
+  //fillPanelWithPageIndicator_strategyMax3(*panel, *img1, *img2, gui_state);
 
   // now, as the correct tab is active, register again the events for the tabview
   lv_obj_add_event_cb(*tabview, tabview_tab_changed_event_cb, LV_EVENT_VALUE_CHANGED, NULL);

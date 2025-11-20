@@ -97,8 +97,31 @@ void sendIRcode_HAL(int protocol, std::list<std::string> commandPayloads, std::s
 
   } else if (protocol == RAW) {
     // not a protocol, but an encoding
-    Serial.printf("sendIRcode_HAL: protocol IR_PROTOCOL_RAW not yet implemented\r\n");
+    Serial.printf("sendIRcode_HAL :will send data %s with protocol IR_PROTOCOL_RAW\r\n", dataStr.c_str());
+    std::string valueAsStr;
+    std::string otherAsStr;
+    std::stringstream dataStrAsStream(dataStr);
+    std::getline(dataStrAsStream, valueAsStr, ':');
+    data = std::stoull(valueAsStr, nullptr, 0);
+    std::getline(dataStrAsStream, otherAsStr, ':');
+    int len = std::stoul(otherAsStr, nullptr, 0);
+    std::getline(dataStrAsStream, otherAsStr, ':');
+    int hz = std::stoul(otherAsStr, nullptr, 0);
 
+    uint16_t *rawData = new uint16_t[len];
+    // now get comma separated values and fill array
+    int pos = 0;
+    std::stringstream ss(valueAsStr);
+    while(ss.good())  {
+      std::string valueStr;
+      std::getline(ss, valueStr, ',');
+      // https://cplusplus.com/reference/string/stoull/
+      data = std::stoull(valueStr, &sz, 0);
+      rawData[pos] = data;
+      pos += 1;
+    }
+    IrSender.sendRaw(rawData, len, hz);
+    delete [] rawData;
   } else {
     // generic implementation for all other protocols
 
