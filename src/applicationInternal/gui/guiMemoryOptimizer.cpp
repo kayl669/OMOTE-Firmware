@@ -5,6 +5,9 @@
 #include "applicationInternal/hardware/hardwarePresenter.h"
 #include "applicationInternal/scenes/sceneRegistry.h"
 #include "applicationInternal/omote_log.h"
+#include "../../scenes/scene_allOff.h"
+#include "applicationInternal/commandHandler.h"
+#include "scenes/scene__default.h"
 
 struct t_gui_on_tab {
   lv_obj_t* tab;
@@ -648,7 +651,7 @@ void gui_memoryOptimizer_afterGUIlistChanged(lv_obj_t** tabview, lv_obj_t** pane
     // we are changing the gui_list, so save the last_active_gui_list_index
     gui_memoryOptimizer_setLastActiveGUIlistIndex(gui_state.gui_on_tab[gui_state.activeTabID].gui_list_index);
   }
-  
+
   // 1. notify old guis and clear tabview and panel
   gui_memoryOptimizer_notifyAndClear(tabview, panel, img1, img2, &gui_state);
 
@@ -658,7 +661,10 @@ void gui_memoryOptimizer_afterGUIlistChanged(lv_obj_t** tabview, lv_obj_t** pane
 
   // 3. create content
   gui_memoryOptimizer_doContentCreation(tabview, panel, img1, img2, &gui_state);
-
+  if(gui_memoryOptimizer_getActiveSceneName() == scene_name_allOff) {
+    //gui_memoryOptimizer_afterSliding(tabview, panel, img1, img2, 1);
+    executeCommand(SCENE_SELECTION);
+  }
 }
 
 // 4. navigate to a specific GUI in gui_list
