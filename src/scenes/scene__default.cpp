@@ -53,11 +53,11 @@ void register_scene_defaultKeys(void) {
   key_commands_short_default = {
                                                                                                              {KEY_OFF,   SCENE_ALLOFF_FORCE},
     {KEY_STOP,  SONY_STOP        },  {KEY_REWI,  SONY_REWIND      },  {KEY_PLAY,   SONY_PAUSE       },  {KEY_FORW,   SONY_FASTFORWARD },
-    {KEY_CONF,  SONY_HOME        },                                                                    {KEY_INFO,  SONY_INFO       },
+    {KEY_CONF,  SONY_GUIDE        },                                                                    {KEY_INFO,  SONY_INFO       },
                                                      {KEY_UP,    SONY_UP           },
                         {KEY_LEFT,  SONY_LEFT    },  {KEY_OK,    SONY_SELECT       },    {KEY_RIGHT, SONY_RIGHT    },
                                                      {KEY_DOWN,  SONY_DOWN         },
-    {KEY_BACK,   SONY_RETURN    },                                                                    {KEY_SRC,   SONY_MENU     },
+    {KEY_BACK,   SONY_RETURN    },                                                                    {KEY_SRC,   SONY_HOME     },
     {KEY_VOLUP, BOSE_VOL_UP  },                      {KEY_MUTE,  BOSE_MUTE},                  {KEY_CHUP,  SONY_CHANNEL_UP  },
     {KEY_VOLDO, BOSE_VOL_DOWN },                      {KEY_REC,   SCENE_BACK_TO_PREVIOUS_GUI_LIST  },   {KEY_CHDOW, SONY_CHANNEL_DOWN  },
     {KEY_RED,   HOME_LIGHT_LIVING_ROOM   },    {KEY_GREEN, HOME_LIGHT_DINING_ROOM},  {KEY_YELLO, HOME_LIGHT_KITCHEN},{KEY_BLUE,  HOME_LIGHT_OFF},
