@@ -33,22 +33,22 @@ void scene_setKeys_TV() {
 
   key_commands_short_TV = {
     {KEY_STOP,  SONY_STOP        },  {KEY_REWI,  SONY_REWIND      },  {KEY_PLAY,   SONY_PLAY       },  {KEY_FORW,   SONY_FASTFORWARD },
-    {KEY_CONF,  SONY_HOME        },                                                                    {KEY_INFO,  SONY_INFO       },
+    {KEY_CONF,  SONY_GUIDE        },                                                                    {KEY_INFO,  SONY_INFO       },
                                                      {KEY_UP,    SONY_UP           },
                         {KEY_LEFT,  SONY_LEFT    },  {KEY_OK,    SONY_SELECT       },    {KEY_RIGHT, SONY_RIGHT    },
                                                      {KEY_DOWN,  SONY_DOWN         },
-    {KEY_BACK,   SONY_RETURN    },                                                                    {KEY_SRC,   SONY_MENU     },
+    {KEY_BACK,   SONY_RETURN    },                                                                    {KEY_SRC,   SONY_HOME     },
     {KEY_VOLUP,   BOSE_VOL_UP    },                  {KEY_MUTE,    BOSE_MUTE       },                  {KEY_CHUP,  SONY_CHANNEL_UP},
     {KEY_VOLDO,   BOSE_VOL_DOWN  },                  {KEY_REC,     SONY_CONFIGURATION      },                  {KEY_CHDOW, SONY_CHANNEL_DOWN},
   };
   
   key_commands_long_TV = {
     {KEY_STOP,  SONY_STOP        },  {KEY_REWI,  SONY_REWIND      },  {KEY_PLAY,   SONY_PAUSE       },  {KEY_FORW,   SONY_FASTFORWARD },
-    {KEY_CONF,  SONY_HOME        },                                                                    {KEY_INFO,  SONY_INFO       },
+    {KEY_CONF,  SONY_GUIDE        },                                                                    {KEY_INFO,  SONY_INFO       },
                                                      {KEY_UP,    SONY_UP           },
                         {KEY_LEFT,  SONY_LEFT    },  {KEY_OK,    SONY_SELECT       },    {KEY_RIGHT, SONY_RIGHT    },
                                                      {KEY_DOWN,  SONY_DOWN         },
-    {KEY_BACK,   SONY_RETURN    },                                                                    {KEY_SRC,   SONY_MENU     },
+    {KEY_BACK,   SONY_RETURN    },                                                                    {KEY_SRC,   SONY_HOME     },
     {KEY_VOLUP,   BOSE_VOL_UP    },                  {KEY_MUTE,    BOSE_MUTE       },                  {KEY_CHUP,  SONY_CHANNEL_UP},
     {KEY_VOLDO,   BOSE_VOL_DOWN  },                  {KEY_REC,     SONY_PAUSE      },                  {KEY_CHDOW, SONY_CHANNEL_DOWN},
   };

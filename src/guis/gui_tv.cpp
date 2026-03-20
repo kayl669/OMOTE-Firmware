@@ -378,7 +378,7 @@ void fillTabTV(lv_obj_t *tab) {
     LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1),
     LV_GRID_TEMPLATE_LAST
   }; // equal x distribution
-  static lv_coord_t row_dsc[] = {5, 30, 30, 30, 30, 30, 30, 30, 16, 30, 30, LV_GRID_TEMPLATE_LAST};
+  static lv_coord_t row_dsc[] = {0, 29, 29, 29, 29, 29, 29, 29, LV_GRID_TEMPLATE_LAST};
   // manual y distribution to compress the grid a bit
   lv_obj_set_style_pad_all(tab, 0, LV_PART_MAIN);
   lv_obj_set_style_shadow_width(tab, 0, LV_PART_MAIN);
@@ -404,21 +404,12 @@ void fillTabTV(lv_obj_t *tab) {
   createButton(tab, 7,  4, 5, 1,  "0", 10);
 
   createButton(tab, 1, 8, 6, 1,  "Menu", 1);
-  createButton(tab, 9, 8, 6, 1,  "Guide", 2);
-  createButton(tab, 1, 8, 7, 1,  "Tv", 3);
-  createButton(tab, 9, 8, 7, 1,  "Options", 4);
+  createButton(tab, 9, 8, 6, 1,  "Options", 4);
 
-  menuLabel = lv_label_create(tab);
-  lv_label_set_text(menuLabel, "Hdmi");
-  lv_obj_set_grid_cell(menuLabel, LV_GRID_ALIGN_STRETCH, 1, 16, LV_GRID_ALIGN_STRETCH, 8, 1);
-
-  createButton(tab, 1,  4, 9, 1, "1", 5);
-  createButton(tab, 5,  4, 9, 1, "2", 6);
-  createButton(tab, 9,  4, 9, 1, "3", 7);
-  createButton(tab, 13, 4, 9, 1, "4", 8);
-  menuLabel = lv_label_create(tab);
-  lv_label_set_text(menuLabel, "");
-  lv_obj_set_grid_cell(menuLabel, LV_GRID_ALIGN_STRETCH, 1, 16, LV_GRID_ALIGN_STRETCH, 10, 1);
+  createButton(tab, 1,  4, 7, 1, "Hdmi1", 5);
+  createButton(tab, 5,  4, 7, 1, "Hdmi2", 6);
+  createButton(tab, 9,  4, 7, 1, "Hdmi3", 7);
+  createButton(tab, 13, 4, 7, 1, "Hdmi4", 8);
 }
 
 void fillTabBose(lv_obj_t *tab) {
@@ -452,9 +443,9 @@ void fillTabBose(lv_obj_t *tab) {
 }
 
 void fillTabHome(lv_obj_t *tab) {
-  static lv_coord_t col_dsc[] = {0, LV_GRID_FR(1), 30, 30, 30, 30, 30, 0, LV_GRID_TEMPLATE_LAST};
+  static lv_coord_t col_dsc[] = {0, 30, 30, 30, 45, 45, 0, LV_GRID_TEMPLATE_LAST};
   // equal x distribution
-  static lv_coord_t row_dsc[] = {5, 30, 30, 30, 30, 30, 16, 30, 30, 30, LV_GRID_TEMPLATE_LAST};
+  static lv_coord_t row_dsc[] = {5, 30, 30, 30, 30, 30, 16, 30, 30, LV_GRID_TEMPLATE_LAST};
   // manual y distribution to compress the grid a bit
 
   lv_obj_set_align(tab, LV_ALIGN_TOP_MID);
@@ -467,55 +458,50 @@ void fillTabHome(lv_obj_t *tab) {
 
   lv_obj_t *menuLabel = lv_label_create(tab);
   lv_label_set_text(menuLabel, "");
-  lv_obj_set_grid_cell(menuLabel, LV_GRID_ALIGN_STRETCH, 1, 7, LV_GRID_ALIGN_STRETCH, 0, 1);
+  lv_obj_set_grid_cell(menuLabel, LV_GRID_ALIGN_STRETCH, 1, 5, LV_GRID_ALIGN_STRETCH, 0, 1);
 
   menuLabel = lv_label_create(tab);
   lv_label_set_text(menuLabel, "Salon");
-  lv_obj_set_grid_cell(menuLabel, LV_GRID_ALIGN_STRETCH, 1, 2, LV_GRID_ALIGN_STRETCH, 1, 1);
+  lv_obj_set_grid_cell(menuLabel, LV_GRID_ALIGN_STRETCH, 1, 3, LV_GRID_ALIGN_STRETCH, 1, 1);
   createButton(tab, 4, 1, 1, 1, LV_SYMBOL_UP, 31);
-  createButton(tab, 5, 1, 1, 1, LV_SYMBOL_STOP, 32);
-  createButton(tab, 6, 1, 1, 1, LV_SYMBOL_DOWN, 33);
+  createButton(tab, 5, 1, 1, 1, LV_SYMBOL_DOWN, 33);
 
   menuLabel = lv_label_create(tab);
   lv_label_set_text(menuLabel, "Salle");
-  lv_obj_set_grid_cell(menuLabel, LV_GRID_ALIGN_STRETCH, 1, 2, LV_GRID_ALIGN_STRETCH, 2, 1);
+  lv_obj_set_grid_cell(menuLabel, LV_GRID_ALIGN_STRETCH, 1, 3, LV_GRID_ALIGN_STRETCH, 2, 1);
   createButton(tab, 4, 1, 2, 1, LV_SYMBOL_UP, 34);
-  createButton(tab, 5, 1, 2, 1, LV_SYMBOL_STOP, 35);
-  createButton(tab, 6, 1, 2, 1, LV_SYMBOL_DOWN, 36);
+  createButton(tab, 5, 1, 2, 1, LV_SYMBOL_DOWN, 36);
 
   menuLabel = lv_label_create(tab);
   lv_label_set_text(menuLabel, "Cuisine");
-  lv_obj_set_grid_cell(menuLabel, LV_GRID_ALIGN_STRETCH, 1, 2, LV_GRID_ALIGN_STRETCH, 3, 1);
+  lv_obj_set_grid_cell(menuLabel, LV_GRID_ALIGN_STRETCH, 1, 3, LV_GRID_ALIGN_STRETCH, 3, 1);
   createButton(tab, 4, 1, 3, 1, LV_SYMBOL_UP, 40);
-  createButton(tab, 5, 1, 3, 1, LV_SYMBOL_STOP, 41);
-  createButton(tab, 6, 1, 3, 1, LV_SYMBOL_DOWN, 42);
+  createButton(tab, 5, 1, 3, 1, LV_SYMBOL_DOWN, 42);
 
   menuLabel = lv_label_create(tab);
   lv_label_set_text(menuLabel, "Store Cuisine");
   lv_obj_set_grid_cell(menuLabel, LV_GRID_ALIGN_STRETCH, 1, 3, LV_GRID_ALIGN_STRETCH, 4, 1);
   createButton(tab, 4, 1, 4, 1, LV_SYMBOL_UP, 43);
-  createButton(tab, 5, 1, 4, 1, LV_SYMBOL_STOP, 44);
-  createButton(tab, 6, 1, 4, 1, LV_SYMBOL_DOWN, 45);
+  createButton(tab, 5, 1, 4, 1, LV_SYMBOL_DOWN, 45);
 
   menuLabel = lv_label_create(tab);
   lv_label_set_text(menuLabel, "Tous");
-  lv_obj_set_grid_cell(menuLabel, LV_GRID_ALIGN_STRETCH, 1, 2, LV_GRID_ALIGN_STRETCH, 5, 1);
+  lv_obj_set_grid_cell(menuLabel, LV_GRID_ALIGN_STRETCH, 1, 3, LV_GRID_ALIGN_STRETCH, 5, 1);
   createButton(tab, 4, 1, 5, 1, LV_SYMBOL_UP, 37);
-  createButton(tab, 5, 1, 5, 1, LV_SYMBOL_STOP, 38);
-  createButton(tab, 6, 1, 5, 1, LV_SYMBOL_DOWN, 39);
+  createButton(tab, 5, 1, 5, 1, LV_SYMBOL_DOWN, 39);
 
   menuLabel = lv_label_create(tab);
   lv_label_set_text(menuLabel, "Hotte");
-  lv_obj_set_grid_cell(menuLabel, LV_GRID_ALIGN_STRETCH, 1, 7, LV_GRID_ALIGN_STRETCH, 6, 1);
+  lv_obj_set_grid_cell(menuLabel, LV_GRID_ALIGN_STRETCH, 1, 5, LV_GRID_ALIGN_STRETCH, 6, 1);
 
-  createButton(tab, 2, 1, 7, 1, LV_SYMBOL_POWER, 46);
-  createButton(tab, 3, 1, 7, 1, LV_SYMBOL_PLUS, 47);
-  createButton(tab, 4, 1, 7, 1, LV_SYMBOL_MINUS, 48);
-  createButton(tab, 5, 2, 7, 1, "Max", 49);
-  createButton(tab, 3, 3, 8, 1, "Lumiere", 50);
+  createButton(tab, 1, 1, 7, 1, LV_SYMBOL_POWER, 46);
+  createButton(tab, 2, 1, 7, 1, LV_SYMBOL_PLUS, 47);
+  createButton(tab, 3, 1, 7, 1, LV_SYMBOL_MINUS, 48);
+  createButton(tab, 4, 1, 7, 1, "Max", 49);
+  createButton(tab, 5, 1, 7, 1, "Lum", 50);
   menuLabel = lv_label_create(tab);
   lv_label_set_text(menuLabel, "");
-  lv_obj_set_grid_cell(menuLabel, LV_GRID_ALIGN_STRETCH, 1, 7, LV_GRID_ALIGN_STRETCH, 9, 1);
+  lv_obj_set_grid_cell(menuLabel, LV_GRID_ALIGN_STRETCH, 1, 5, LV_GRID_ALIGN_STRETCH, 9, 1);
 }
 
 void fillTabBluray(lv_obj_t *tab) {
