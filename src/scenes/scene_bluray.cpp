@@ -9,6 +9,7 @@
 #include "applicationInternal/commandHandler.h"
 // guis
 #include "devices/mediaPlayer/device_samsungbluray/device_samsungbluray.h"
+#include "guis/gui_tv.h"
 
 uint16_t SCENE_BLURAY         ; //"Scene_bluray"
 uint16_t SCENE_BLURAY_FORCE   ; //"Scene_bluray_force"
@@ -57,6 +58,8 @@ void scene_start_sequence_bluray(void) {
   executeCommand(BOSE_POWER_ON);
   delay(500);
   executeCommand(BOSE_BD_DVD);
+  currentStartTab = 2;
+  currentIndex = 2;
 }
 
 void scene_end_sequence_bluray(void) {

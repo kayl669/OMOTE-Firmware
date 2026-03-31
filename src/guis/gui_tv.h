@@ -4,3 +4,5 @@
 
 const char * const tabName_tv = "TV";
 void register_gui_tv(void);
+extern int currentStartTab;
+extern int currentIndex;
