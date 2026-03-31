@@ -20,6 +20,7 @@ main_gui_list : "Scene selection", "Smart Home", "Settings", "IR Receiver"};
 std::string activeScene;
 std::string activeGUIname;
 int activeGUIlist;
+int activeTab;
 int lastActiveGUIlistIndex;
 
 void init_preferences_HAL(void) {
@@ -49,6 +50,12 @@ int get_activeGUIlist_HAL() {
 }
 void set_activeGUIlist_HAL(int anActiveGUIlist) {
   activeGUIlist = anActiveGUIlist;
+}
+int get_activeTab_HAL() {
+  return activeTab;
+}
+void set_activeTab_HAL(int anActiveTab) {
+  activeTab = anActiveTab;
 }
 int get_lastActiveGUIlistIndex_HAL() {
   return lastActiveGUIlistIndex;

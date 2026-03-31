@@ -11,5 +11,7 @@ std::string get_activeGUIname_HAL();
 void set_activeGUIname_HAL(std::string anActiveGUIname);
 int get_activeGUIlist_HAL();
 void set_activeGUIlist_HAL(int anActiveGUIlist);
+int get_activeTab_HAL();
+void set_activeTab_HAL(int anActiveTab);
 int get_lastActiveGUIlistIndex_HAL();
 void set_lastActiveGUIlistIndex_HAL(int aGUIlistIndex);
