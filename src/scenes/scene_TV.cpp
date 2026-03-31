@@ -9,6 +9,7 @@
 //#include "devices/TV/device_samsungTV/device_samsungTV.h"
 //#include "devices/AVreceiver/device_yamahaAmp/device_yamahaAmp.h"
 #include "applicationInternal/commandHandler.h"
+#include "guis/gui_tv.h"
 // guis
 //#include "guis/gui_numpad.h"
 
@@ -63,6 +64,8 @@ void scene_start_sequence_TV(void) {
   executeCommand(BOSE_POWER_ON);
   delay(500);
   executeCommand(BOSE_INPUT);
+  currentStartTab = 0;
+  currentIndex = 0;
 }
 
 void scene_end_sequence_TV(void) {

@@ -8,14 +8,16 @@
 #include "guis/gui_tv.h"
 
 #include "devices/mediaPlayer/device_samsungbluray/device_samsungbluray.h"
+#include "ESP32/preferencesStorage_hal_esp32.h"
 
 #ifndef dimof
     #define dimof(__array)     (sizeof(__array) / sizeof(__array[0]))
 #endif
 
-static const char * tab_names[] = {"TV", "Bose", "Maison", "Bluray"};
+static const char * tab_names[] = {"TV", "Bose", "Maison", "Freebox", "Bluray"};
 const int maxTab = 3;
 int currentStartTab = 0;
+int currentIndex = 0;
 lv_obj_t* tv_tabview = NULL;
 lv_obj_t* tabContainer = NULL;
 
@@ -23,6 +25,7 @@ void fillTabTV(lv_obj_t *tab);
 void fillTabBose(lv_obj_t *tab);
 void fillTabHome(lv_obj_t *tab);
 void fillTabBluray(lv_obj_t *tab);
+void fillTabFreebox(lv_obj_t *tab);
 
 void changed_event_cb(lv_event_t* e) {
     if (tabContainer == NULL) {
@@ -38,7 +41,9 @@ void changed_event_cb(lv_event_t* e) {
     lv_obj_align(tabContainer, LV_ALIGN_TOP_LEFT, 0, 0);
     lv_obj_set_style_bg_color(tabContainer, lv_color_black(), LV_PART_MAIN);
 
-    int index = currentStartTab + lv_tabview_get_tab_act(tv_tabview);
+    currentIndex = lv_tabview_get_tab_act(tv_tabview);
+    int index = currentStartTab + currentIndex;
+    set_activeTab_HAL(index);
     switch(index) {
       case 0: {
         fillTabTV(tabContainer);
@@ -53,11 +58,29 @@ void changed_event_cb(lv_event_t* e) {
         break;
       }
       case 3: {
+        fillTabFreebox(tabContainer);
+        break;
+      }
+      case 4: {
         fillTabBluray(tabContainer);
         break;
       }
     }
 }
+
+void updateTab() {
+  int saveIndex = get_activeTab_HAL();
+  if (saveIndex >= maxTab && currentStartTab == 0) {
+    currentStartTab = saveIndex - maxTab + 1;
+    currentIndex = saveIndex - currentStartTab;
+  }
+  for (int i = 0; i < maxTab; i++) {
+    lv_tabview_rename_tab(tv_tabview, i, tab_names[currentStartTab + i]);
+  }
+  lv_tabview_set_act(tv_tabview, currentIndex, LV_ANIM_ON);
+  changed_event_cb(NULL);
+}
+
 void button_clicked_event_cb(lv_event_t* e) {
   int user_data = (intptr_t)(e->user_data);
 
@@ -316,6 +339,78 @@ void button_clicked_event_cb(lv_event_t* e) {
       executeCommand(SAMSUNGBLURAY_INFO);
       break;
     }
+    case 60: {
+      executeCommand(KEYBOARD_BLE_FREEBOX_HOME);
+      break;
+    }
+    case 61: {
+      executeCommand(KEYBOARD_BLE_FREEBOX_NUM_1);
+      break;
+    }
+    case 62: {
+      executeCommand(KEYBOARD_BLE_FREEBOX_NUM_2);
+      break;
+    }
+    case 63: {
+      executeCommand(KEYBOARD_BLE_FREEBOX_NUM_3);
+      break;
+    }
+    case 64: {
+      executeCommand(KEYBOARD_BLE_FREEBOX_NUM_4);
+      break;
+    }
+    case 65: {
+      executeCommand(KEYBOARD_BLE_FREEBOX_NUM_5);
+      break;
+    }
+    case 66: {
+      executeCommand(KEYBOARD_BLE_FREEBOX_NUM_6);
+      break;
+    }
+    case 67: {
+      executeCommand(KEYBOARD_BLE_FREEBOX_NUM_7);
+      break;
+    }
+    case 68: {
+      executeCommand(KEYBOARD_BLE_FREEBOX_NUM_8);
+      break;
+    }
+    case 69: {
+      executeCommand(KEYBOARD_BLE_FREEBOX_NUM_9);
+      break;
+    }
+    case 70: {
+      executeCommand(KEYBOARD_BLE_FREEBOX_NUM_0);
+      break;
+    }
+    case 71: {
+      executeCommand(KEYBOARD_BLE_FREEBOX_UP);
+      break;
+    }
+    case 72: {
+      executeCommand(KEYBOARD_BLE_FREEBOX_LEFT);
+      break;
+    }
+    case 73: {
+      executeCommand(KEYBOARD_BLE_FREEBOX_SELECT);
+      break;
+    }
+    case 74: {
+      executeCommand(KEYBOARD_BLE_FREEBOX_RIGHT);
+      break;
+    }
+    case 75: {
+      executeCommand(KEYBOARD_BLE_FREEBOX_DOWN);
+      break;
+    }
+    case 76: {
+      executeCommand(KEYBOARD_BLE_FREEBOX_BACK);
+      break;
+    }
+    case 77: {
+      executeCommand(KEYBOARD_BLE_FREEBOX_MENU);
+      break;
+    }
     case 100: {
       int index = lv_tabview_get_tab_act(tv_tabview);
       index--;
@@ -326,11 +421,9 @@ void button_clicked_event_cb(lv_event_t* e) {
       if (currentStartTab < 0) {
         currentStartTab = 0;
       }
-      for (int i = 0; i < maxTab; i++) {
-        lv_tabview_rename_tab(tv_tabview, i, tab_names[currentStartTab + i]);
-      }
-      lv_tabview_set_act(tv_tabview, index, LV_ANIM_ON);
-      changed_event_cb(e);
+      currentIndex = index;
+      set_activeTab_HAL(currentStartTab + index);
+      updateTab();
       break;
     }
     case 101: {
@@ -343,11 +436,9 @@ void button_clicked_event_cb(lv_event_t* e) {
       if (currentStartTab >= dimof(tab_names) - maxTab) {
         currentStartTab = dimof(tab_names) - maxTab;
       }
-      for (int i = 0; i < maxTab; i++) {
-        lv_tabview_rename_tab(tv_tabview, i, tab_names[currentStartTab + i]);
-      }
-      lv_tabview_set_act(tv_tabview, index, LV_ANIM_ON);
-      changed_event_cb(e);
+      currentIndex = index;
+      set_activeTab_HAL(currentStartTab + index);
+      updateTab();
       break;
     }
     default: {
@@ -531,7 +622,52 @@ void fillTabBluray(lv_obj_t *tab) {
   createButton(tab, 3, 2, 4, 1, "Info", 57);
 }
 
+void fillTabFreebox(lv_obj_t *tab) {
+  static lv_coord_t col_dsc[] = {
+    LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1),
+    LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1),
+    LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1),
+    LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1),
+    LV_GRID_TEMPLATE_LAST
+  }; // equal x distribution
+  static lv_coord_t row_dsc[] = {5, 30, 30, 30, 30, 30, 30, 30, 30, 30, LV_GRID_TEMPLATE_LAST};
+  // manual y distribution to compress the grid a bit
+  lv_obj_set_style_pad_all(tab, 0, LV_PART_MAIN);
+  lv_obj_set_style_shadow_width(tab, 0, LV_PART_MAIN);
+  lv_obj_set_style_border_width(tab, 0, LV_PART_MAIN);
+  lv_obj_set_style_grid_column_dsc_array(tab, col_dsc, 0);
+  lv_obj_set_style_grid_row_dsc_array(tab, row_dsc, 0);
+  lv_obj_set_layout(tab, LV_LAYOUT_GRID);
+
+  lv_obj_t *menuLabel = lv_label_create(tab);
+  lv_label_set_text(menuLabel, "");
+  lv_obj_set_grid_cell(menuLabel, LV_GRID_ALIGN_STRETCH, 1, 16, LV_GRID_ALIGN_STRETCH, 0, 1);
+  createButton(tab, 13, 3, 1, 1,  LV_SYMBOL_POWER, 60);
+
+  createButton(tab, 3,  4, 2, 1,  "1", 61);
+  createButton(tab, 7,  4, 2, 1,  "2", 62);
+  createButton(tab, 11, 4, 2, 1,  "3", 63);
+  createButton(tab, 3,  4, 3, 1,  "4", 64);
+  createButton(tab, 7,  4, 3, 1,  "5", 65);
+  createButton(tab, 11, 4, 3, 1,  "6", 66);
+  createButton(tab, 3,  4, 4, 1,  "7", 67);
+  createButton(tab, 7,  4, 4, 1,  "8", 68);
+  createButton(tab, 11, 4, 4, 1,  "9", 69);
+  createButton(tab, 7,  4, 5, 1,  "0", 70);
+
+  createButton(tab, 1, 8, 6, 1,  "Free", 77);
+  createButton(tab, 9, 8, 6, 1,  LV_SYMBOL_HOME, 60);
+
+  createButton(tab, 7,  4, 7, 1,  LV_SYMBOL_UP, 71);
+  createButton(tab, 3,  4, 8, 1,  LV_SYMBOL_LEFT, 72);
+  createButton(tab, 7,  4, 8, 1,  LV_SYMBOL_OK, 73);
+  createButton(tab, 11,  4, 8, 1,  LV_SYMBOL_RIGHT, 74);
+  createButton(tab, 3,  4, 9, 1,  LV_SYMBOL_NEW_LINE, 76);
+  createButton(tab, 7,  4, 9, 1,  LV_SYMBOL_DOWN, 75);
+}
+
 void notify_tab_before_delete_tv(void) {
+  //currentIndex = lv_tabview_get_tab_act(tv_tabview);
 }
 
 void create_tab_content_tv(lv_obj_t* tab) {
@@ -577,8 +713,8 @@ void create_tab_content_tv(lv_obj_t* tab) {
     lv_obj_center(label);
   }
 
-  for (int i = currentStartTab; i < dimof(tab_names) && i < currentStartTab + maxTab; i++) {
-    lv_tabview_add_tab(tv_tabview, tab_names[i]);
+  for (int i = 0; i < dimof(tab_names) && i < maxTab; i++) {
+    lv_tabview_add_tab(tv_tabview, std::to_string(i).c_str());
   }
 
   lv_obj_t * btns = lv_tabview_get_tab_btns(tv_tabview);
@@ -599,9 +735,7 @@ void create_tab_content_tv(lv_obj_t* tab) {
   lv_obj_set_size(tabContainer, SCR_WIDTH, tabviewHeight - 35);
   lv_obj_align(tabContainer, LV_ALIGN_TOP_LEFT, 0, 0);
   lv_obj_set_style_bg_color(tabContainer, lv_color_black(), LV_PART_MAIN);
-  currentStartTab = 0;
-  fillTabTV(tabContainer);
-  lv_tabview_set_act(tv_tabview, 0, LV_ANIM_ON);
+  updateTab();
 }
 
 void register_gui_tv(void){
