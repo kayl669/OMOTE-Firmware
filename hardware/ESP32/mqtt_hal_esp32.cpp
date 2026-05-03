@@ -1,16 +1,37 @@
 #include <sstream>
+#include <algorithm>
+#include <vector>
+#include <Arduino.h>
+#include <cstring>
+#include <time.h>
 #include "WiFi.h"
 #include <PubSubClient.h>
+#include <Preferences.h>
 #include "mqtt_hal_esp32.h"
 #if (ENABLE_KEYBOARD_BLE == 1)
 #include "keyboard_ble_hal_esp32.h"
 #endif
 #include "secrets.h"
+#include "esp_sntp.h"
 
 #if (ENABLE_WIFI_AND_MQTT == 1)
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 bool isWifiConnected = false;
+bool wifiShutdownRequested = false;
+bool wifiCredentialsLoaded = false;
+constexpr const char* kNtpServer1 = "pool.ntp.org";
+constexpr unsigned long kMqttReconnectBaseIntervalMs = 5000;
+constexpr unsigned long kMqttReconnectMaxIntervalMs = 60000;
+constexpr unsigned long kMqttFailureLogIntervalMs = 10000;
+constexpr unsigned long kMqttConfigLogIntervalMs = 60000;
+constexpr unsigned long kTimeSyncLogIntervalMs = 30000;
+unsigned long lastWifiReconnectAttemptMs = 0;
+unsigned long mqttReconnectIntervalMs = kMqttReconnectBaseIntervalMs;
+unsigned long lastReconnectAttempt = 0;
+unsigned long lastTimeSyncRequestMs = 9999;
+unsigned long lastTimeSyncLogMs = 0;
+volatile bool ntpSyncPending = false;
 
 tAnnounceWiFiconnected_cb thisAnnounceWiFiconnected_cb = NULL;
 void set_announceWiFiconnected_cb_HAL(tAnnounceWiFiconnected_cb pAnnounceWiFiconnected_cb) {
@@ -19,11 +40,55 @@ void set_announceWiFiconnected_cb_HAL(tAnnounceWiFiconnected_cb pAnnounceWiFicon
 
 tAnnounceSubscribedTopics_cb thisAnnounceSubscribedTopics_cb = NULL;
 void set_announceSubscribedTopics_cb_HAL(tAnnounceSubscribedTopics_cb pAnnounceSubscribedTopics_cb) {
-  thisAnnounceSubscribedTopics_cb = pAnnounceSubscribedTopics_cb;  
+  thisAnnounceSubscribedTopics_cb = pAnnounceSubscribedTopics_cb;
+}
+
+static void request_time_sync_internal(const char* reason) {
+  const unsigned long now = millis();
+  if (now - lastTimeSyncRequestMs < 2000) return;
+  lastTimeSyncRequestMs = now;
+
+  const char* tz = "CET-1CEST,M3.5.0/2,M10.5.0/3";
+
+  setenv("TZ", tz, 1);
+  tzset();
+
+  esp_sntp_setoperatingmode(ESP_SNTP_OPMODE_POLL);
+  esp_sntp_setservername(0, kNtpServer1);
+  if (esp_sntp_enabled()) {
+    esp_sntp_restart();
+  } else {
+    configTzTime(tz, kNtpServer1);
+  }
+
+  bool should_log = (reason != nullptr && reason[0] != '\0');
+  if (!should_log && (now - lastTimeSyncLogMs >= kTimeSyncLogIntervalMs)) {
+    should_log = true;
+  }
+  if (should_log) {
+    if (reason != nullptr && reason[0] != '\0') {
+      Serial.printf("NTP sync requested (%s)\r\n", reason);
+    } else {
+      Serial.printf("NTP sync requested\r\n");
+    }
+    lastTimeSyncLogMs = now;
+  }
+}
+
+static bool start_wifi_with_effective_credentials() {
+  WiFi.mode(WIFI_STA);
+  wifiShutdownRequested = false;
+  lastWifiReconnectAttemptMs = millis();
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  return true;
 }
 
 bool getIsWifiConnected_HAL() {
   return isWifiConnected;
+}
+
+void wifi_request_time_sync_HAL() {
+  request_time_sync_internal("manual");
 }
 
 // WiFi status event
@@ -33,28 +98,38 @@ void WiFiEvent(WiFiEvent_t event){
     // connection to MQTT server will be done in checkMQTTconnection()
     // mqttClient.setServer(MQTT_SERVER, 1883); // MQTT initialization
     // mqttClient.connect("OMOTE"); // Connect using a client id
-
-  }
-
-  // Set status bar icon based on WiFi status
-  if (event == ARDUINO_EVENT_WIFI_STA_GOT_IP || event == ARDUINO_EVENT_WIFI_STA_GOT_IP6) {
     isWifiConnected = true;
-    thisAnnounceWiFiconnected_cb(true);
+    wifiShutdownRequested = false;
+    mqttReconnectIntervalMs = kMqttReconnectBaseIntervalMs;
+    if (thisAnnounceWiFiconnected_cb != NULL) {
+      thisAnnounceWiFiconnected_cb(true);
+    }
     Serial.printf("WiFi connected, IP address: %s\r\n", WiFi.localIP().toString().c_str());
+    ntpSyncPending = true;
 
   } else if (event == ARDUINO_EVENT_WIFI_STA_DISCONNECTED) {
     isWifiConnected = false;
-    thisAnnounceWiFiconnected_cb(false);
-    // automatically try to reconnect
-    Serial.printf("WiFi got disconnected. Will try to reconnect.\r\n");
-    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+    if (thisAnnounceWiFiconnected_cb != NULL) {
+      thisAnnounceWiFiconnected_cb(false);
+    }
+    if (wifiShutdownRequested || WiFi.getMode() == WIFI_OFF) {
+      // Intentional disconnect during sleep/power down.
+      return;
+    }
+    // automatically try to reconnect, throttled
+    const unsigned long now = millis();
+    if (now - lastWifiReconnectAttemptMs >= 3000) {
+      Serial.printf("WiFi disconnected. Reconnecting...\r\n");
+      start_wifi_with_effective_credentials();
+    }
 
   } else {
     // e.g. ARDUINO_EVENT_WIFI_STA_CONNECTED or many others
     // connected is not enough, will wait for IP
     isWifiConnected = false;
+    if (thisAnnounceWiFiconnected_cb != NULL) {
     thisAnnounceWiFiconnected_cb(false);
-
+    }
   }
 }
 
@@ -62,7 +137,10 @@ void init_mqtt_HAL(void) {
   // Setup WiFi
   WiFi.setHostname(WIFI_HOSTNAME);
   WiFi.onEvent(WiFiEvent);
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  wifiShutdownRequested = false;
+  mqttReconnectIntervalMs = kMqttReconnectBaseIntervalMs;
+  lastReconnectAttempt = 0;
+  start_wifi_with_effective_credentials();
   WiFi.setSleep(true);
 }
 
@@ -88,7 +166,9 @@ void callback(char* topic, byte* payload, unsigned int length) {
     // ...
 
     // Or forward the topic to "void receiveMQTTmessage_cb" in the "commandHandler.cpp", if it is not ESP32 hardware related
+    if (thisAnnounceSubscribedTopics_cb != NULL) {
     thisAnnounceSubscribedTopics_cb(topicReceived, strPayload);
+    }
 
   #if (ENABLE_KEYBOARD_BLE == 1)
   } else if (topicReceived == subscribeTopicOMOTE_BLEstartAdvertisingForAll) {
@@ -126,8 +206,9 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
   } else {
     // forward all other topics to the commandHandler
+    if (thisAnnounceSubscribedTopics_cb != NULL) {
     thisAnnounceSubscribedTopics_cb(topicReceived, strPayload);
-
+    }
   }
 }
 
@@ -148,42 +229,46 @@ void mqtt_subscribeTopics() {
 }
 
 bool checkMQTTconnection() {
-
-  if (WiFi.isConnected()) {
-    if (mqttClient.connected()) {
-      return true;
-    } else {
-      // try to connect to mqtt server
-      mqttClient.setBufferSize(512);   // default is 256
-      //mqttClient.setKeepAlive(15);     // default is 15   Client will send MQTTPINGREQ to keep connection alive
-      //mqttClient.setSocketTimeout(15); // default is 15   This determines how long the client will wait for incoming data when it expects data to arrive - for example, whilst it is in the middle of reading an MQTT packet.
-      mqttClient.setServer(MQTT_SERVER, MQTT_SERVER_PORT); // MQTT initialization
-      
-      std::string mqttClientName = std::string(MQTT_CLIENTNAME) + "_esp32_" + std::string(WiFi.macAddress().c_str());
-      if (mqttClient.connect(mqttClientName.c_str(), MQTT_USER, MQTT_PASS)) {
-        Serial.printf("  Successfully connected to MQTT broker\r\n");
-    
-        mqtt_subscribeTopics();
-
-      } else {
-        Serial.printf("  MQTT connection failed (but WiFi is available). Will try later ...\r\n");
-
-      }
-      return mqttClient.connected();
-    }
-  } else {
-    // Serial.printf("  No connection to MQTT server, because WiFi ist not connected.\r\n");
+  if (WiFi.getMode() == WIFI_OFF || wifiShutdownRequested) {
     return false;
-  }  
+  }
+  if (!WiFi.isConnected()) {
+    return false;
+  }
+  if (mqttClient.connected()) {
+    return true;
+  }
+
+  // try to connect to mqtt server
+  mqttClient.setBufferSize(512);   // default is 256
+  mqttClient.setServer(MQTT_SERVER, MQTT_SERVER_PORT); // MQTT initialization
+
+  std::string mqttClientName = std::string(MQTT_CLIENTNAME) + "_esp32_" + std::string(WiFi.macAddress().c_str());
+  if (mqttClient.connect(mqttClientName.c_str(), MQTT_USER, MQTT_PASS)) {
+    Serial.printf("  Successfully connected to MQTT broker\r\n");
+    mqtt_subscribeTopics();
+    mqttReconnectIntervalMs = kMqttReconnectBaseIntervalMs;
+    return true;
+  }
+
+  // Exponential backoff (capped) and throttled logging to prevent error spam.
+  mqttReconnectIntervalMs = std::min(mqttReconnectIntervalMs * 2, kMqttReconnectMaxIntervalMs);
+  return false;
 }
 
-unsigned long reconnectInterval = 100;
-// in order to do reconnect immediately ...
-unsigned long lastReconnectAttempt = millis() - reconnectInterval - 1;
 void mqtt_loop_HAL() {
+  if (wifiShutdownRequested || WiFi.getMode() == WIFI_OFF || !WiFi.isConnected()) {
+    return;
+  }
+
+  if (ntpSyncPending) {
+    ntpSyncPending = false;
+    request_time_sync_internal("wifi connected");
+  }
+
   if (!mqttClient.connected()) {
     unsigned long currentMillis = millis();
-    if ((currentMillis - lastReconnectAttempt) > reconnectInterval) {
+    if ((currentMillis - lastReconnectAttempt) > mqttReconnectIntervalMs) {
       lastReconnectAttempt = currentMillis;
       // Attempt to reconnect
       checkMQTTconnection();
@@ -196,24 +281,32 @@ void mqtt_loop_HAL() {
 }
 
 bool publishMQTTMessage_HAL(const char *topic, const char *payload){
-
+  if (wifiShutdownRequested || WiFi.getMode() == WIFI_OFF) {
+    Serial.printf("MQTT publish skipped: WiFi is off\r\n");
+    return false;
+  }
+  const char* safe_topic = (topic != nullptr) ? topic : "";
+  const char* safe_payload = (payload != nullptr) ? payload : "";
   if (checkMQTTconnection()) {
-    // Serial.printf("Sending mqtt payload to topic \"%s\": %s\r\n", topic, payload);
+    Serial.printf("MQTT publish attempt: topic=\"%s\" payload=\"%s\"\r\n", safe_topic, safe_payload);
       
-    if (mqttClient.publish(topic, payload)) {
-      // Serial.printf("Publish ok\r\n");
+    if (mqttClient.publish(safe_topic, safe_payload)) {
+      Serial.printf("MQTT publish ok: %s\r\n", safe_topic);
       return true;
     }
-    else {
-      Serial.printf("Publish failed\r\n");
-    }
-  } else {
-    Serial.printf("  Cannot publish mqtt message, because checkMQTTconnection failed (WiFi or mqtt is not connected)\r\n");
   }
   return false;
 }
 
 void wifi_shutdown_HAL() {
+  wifiShutdownRequested = true;
+  isWifiConnected = false;
+  if (thisAnnounceWiFiconnected_cb != NULL) {
+    thisAnnounceWiFiconnected_cb(false);
+  }
+  if (mqttClient.connected()) {
+    mqttClient.disconnect();
+  }
   WiFi.disconnect();
   WiFi.mode(WIFI_OFF);
 }

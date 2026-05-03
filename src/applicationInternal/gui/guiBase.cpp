@@ -7,7 +7,9 @@
 // for changing to scene Selection gui
 #include "applicationInternal/commandHandler.h"
 #include "applicationInternal/omote_log.h"
+#include "ESP32/mqtt_hal_esp32.h"
 #include "scenes/scene__default.h"
+constexpr time_t kMinValidClockEpoch = 1704067200;  // 2024-01-01 00:00:00 UTC
 
 lv_color_t color_primary = lv_color_hex(0x303030); // gray
 lv_obj_t* MemoryUsageLabel = NULL;
@@ -15,6 +17,7 @@ lv_obj_t* WifiLabel = NULL;
 lv_obj_t* BluetoothLabel = NULL;
 lv_obj_t* BattPercentageLabel = NULL;
 lv_obj_t* BattIconLabel = NULL;
+lv_obj_t* TimeLabel = NULL;
 lv_obj_t* SceneLabel = NULL;
 
 lv_obj_t* tabview = NULL;
@@ -22,6 +25,10 @@ lv_obj_t* tabview = NULL;
 lv_obj_t* panel = NULL;
 lv_obj_t* img1 = NULL;
 lv_obj_t* img2 = NULL;
+bool wifi_connect_attempt_active_ = true;
+unsigned long wifi_connect_attempt_started_ms_ = 0;
+bool last_wifi_connected_known_ = false;
+std::string prev_time_text;
 
 static bool global_styles_already_initialized = false;
 lv_style_t panel_style;
@@ -269,6 +276,14 @@ void init_gui_status_bar() {
   lv_obj_align(BluetoothLabel, LV_ALIGN_TOP_LEFT, 20, labelsPositionTopStatusbar);
   lv_obj_set_style_text_font(BluetoothLabel, &lv_font_montserrat_12, LV_PART_MAIN);
   // Scene ------------------------------------------------------------------------
+  TimeLabel = lv_label_create(statusbar);
+  lv_label_set_text(TimeLabel, "");
+  lv_obj_align(TimeLabel, LV_ALIGN_TOP_LEFT, 30, labelsPositionTopStatusbar);
+  lv_obj_set_style_text_font(TimeLabel, &lv_font_montserrat_12, LV_PART_MAIN);
+  lv_obj_add_flag(TimeLabel, LV_OBJ_FLAG_CLICKABLE);
+//  lv_obj_set_user_data(TimeLabel,(void *)(intptr_t)0);
+//  lv_obj_add_event_cb(TimeLabel, TimeLabel_or_pageIndicator_event_cb, LV_EVENT_CLICKED, NULL);
+  // Scene ------------------------------------------------------------------------
   SceneLabel = lv_label_create(statusbar);
   lv_label_set_text(SceneLabel, "");
   lv_obj_align(SceneLabel, LV_ALIGN_TOP_MID, 0, labelsPositionTopStatusbar);
@@ -287,6 +302,34 @@ void init_gui_status_bar() {
   lv_obj_align(BattIconLabel, LV_ALIGN_TOP_RIGHT, 0, labelsPositionTopStatusbar -1);
   lv_obj_set_style_text_font(BattIconLabel, &lv_font_montserrat_16, LV_PART_MAIN);
 
+}
+
+bool get_valid_local_time(struct tm* out_tm) {
+  if (out_tm == nullptr) return false;
+  time_t now = time(nullptr);
+  if (now < kMinValidClockEpoch) return false;
+#ifdef _WIN32
+  localtime_s(out_tm, &now);
+#else
+  localtime_r(&now, out_tm);
+#endif
+  return true;
+}
+
+std::string current_time_hhmm_text() {
+  struct tm now_tm {};
+  if (!get_valid_local_time(&now_tm)) return "--:--";
+  char buf[12];
+  strftime(buf, sizeof(buf), "%H:%M", &now_tm);
+  return std::string(buf);
+}
+
+std::string current_time_full_text() {
+  struct tm now_tm {};
+  if (!get_valid_local_time(&now_tm)) return "12:00 01-01-2026";
+  char buf[20];
+  strftime(buf, sizeof(buf), "%H:%M %d-%m-%Y", &now_tm);
+  return std::string(buf);
 }
 
 static bool waitOneLoop = false;
@@ -311,9 +354,32 @@ void gui_loop(void) {
 
   // flush texts that might have been added from callbacks from other threads
   // has to be done in a thread safe way in the main thread
-  #if (ENABLE_WIFI_AND_MQTT ==1)
+#if (ENABLE_WIFI_AND_MQTT == 1)
+  bool wifi_connected = getIsWifiConnected_HAL();
   flushWiFiConnectedStatus();
-  #endif
+  if (TimeLabel != nullptr && wifi_connected) {
+    const std::string time_text = current_time_hhmm_text(); //current_time_full_text();
+    if (prev_time_text.empty() || prev_time_text != time_text) {
+      prev_time_text = time_text;
+      omote_log_i("%s\r\n", prev_time_text.c_str());
+    }
+    lv_label_set_text(TimeLabel, time_text.c_str());
+  }
+
+  if (!last_wifi_connected_known_) {
+    last_wifi_connected_known_ = true;
+    wifi_connect_attempt_active_ = true;
+  } else {
+    if (wifi_connect_attempt_active_) {
+      if (wifi_connected) {
+        wifi_connect_attempt_active_ = false;
+        wifi_request_time_sync_HAL();
+      } else if (millis() - wifi_connect_attempt_started_ms_ > 20000) {
+        wifi_connect_attempt_active_ = false;
+      }
+    }
+  }
+#endif
   #if (ENABLE_KEYBOARD_BLE == 1)
   flushBLEMessages();
   #endif
