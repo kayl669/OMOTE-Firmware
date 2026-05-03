@@ -211,6 +211,8 @@ bool publishMQTTMessage_HAL(const char *topic, const char *payload) {
   return true;
 }
 
+void wifi_request_time_sync_HAL() {}
+
 void wifi_shutdown_HAL() {
   /* disconnect */
   if (sockfd != -1) {
