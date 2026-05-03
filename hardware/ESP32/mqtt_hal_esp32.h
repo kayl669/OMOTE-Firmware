@@ -1,11 +1,16 @@
 #pragma once
 
+#include <stdint.h>
+#include <string>
+#include <vector>
+
 #if (ENABLE_WIFI_AND_MQTT == 1)
 
 void init_mqtt_HAL(void);
 bool getIsWifiConnected_HAL();
 void mqtt_loop_HAL();
 bool publishMQTTMessage_HAL(const char *topic, const char *payload);
+void wifi_request_time_sync_HAL();
 void wifi_shutdown_HAL();
 
 typedef void (*tAnnounceWiFiconnected_cb)(bool connected);
