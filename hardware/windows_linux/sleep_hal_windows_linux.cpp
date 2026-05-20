@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdint.h>
 
+int DEFAULT_MOTION_THRESHOLD = 80; // motion above threshold keeps device awake
+int DEFAULT_SLEEP_TIMEOUT = 20000; // default time until device enters sleep mode in milliseconds. Can be overridden.
+
 // is "lift to wake" enabled
 bool wakeupByIMUEnabled = true;
 // timeout before going to sleep
@@ -8,7 +11,15 @@ uint32_t sleepTimeout;
 // threshold for motion detection
 uint8_t motionThreshold;
 
-void init_sleep_HAL() {}
+void init_sleep_HAL() {
+  // will be called after boot or wakeup. Releases GPIO hold and sets wakeup_reason
+  if (sleepTimeout == 0){
+    sleepTimeout = DEFAULT_SLEEP_TIMEOUT;
+  }
+  if (motionThreshold == 0){
+    motionThreshold = DEFAULT_MOTION_THRESHOLD;
+  }
+}
 void init_IMU_HAL(void) {}
 void check_activity_HAL() {}
 void setLastActivityTimestamp_HAL() {}

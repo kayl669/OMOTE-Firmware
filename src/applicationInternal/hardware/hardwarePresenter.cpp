@@ -186,20 +186,26 @@ void keyboardBLE_startAdvertisingDirected(std::string peerAddress, bool isRandom
 void keyboardBLE_stopAdvertising() {
   keyboardBLE_stopAdvertising_HAL();
 }
-void keyboardBLE_printConnectedClients() {
-  keyboardBLE_printConnectedClients_HAL();
+std::string keyboardBLE_printDevices() {
+  return keyboardBLE_printDevices_HAL();
+}
+std::string keyboardBLE_printConnectedClients() {
+  return keyboardBLE_printConnectedClients_HAL();
 }
 void keyboardBLE_disconnectAllClients() {
   keyboardBLE_disconnectAllClients_HAL();
 }
-void keyboardBLE_printBonds() {
-  keyboardBLE_printBonds_HAL();
+std::string keyboardBLE_printBonds() {
+  return keyboardBLE_printBonds_HAL();
 }
 std::string keyboardBLE_getBonds() {
   return keyboardBLE_getBonds_HAL();
 }
 void keyboardBLE_deleteBonds() {
   keyboardBLE_deleteBonds_HAL();
+}
+void keyboardBLE_deleteBond(int index) {
+  keyboardBLE_deleteBond_HAL(index);
 }
 bool keyboardBLE_forceConnectionToAddress(std::string peerAddress) {
   return keyboardBLE_forceConnectionToAddress_HAL(peerAddress);
