@@ -50,6 +50,12 @@ int get_lastActiveGUIlistIndex() {
 void set_lastActiveGUIlistIndex(int aGUIlistIndex) {
   set_lastActiveGUIlistIndex_HAL(aGUIlistIndex);
 }
+BacklightSignalSettings get_backlightSignalSettings() {
+  return get_backlightSignalSettings_HAL();
+}
+void set_backlightSignalSettings(BacklightSignalSettings aSettings) {
+  set_backlightSignalSettings_HAL(aSettings);
+}
 
 // --- user led ---------------------------------------------------------------
 void init_userled(void) {
@@ -87,6 +93,9 @@ void check_activity() {
 void setLastActivityTimestamp() {
   setLastActivityTimestamp_HAL();
 };
+bool get_wokenUpByMotion() {
+  return get_wokenUpByMotion_HAL();
+}
 uint32_t get_sleepTimeout() {
   return get_sleepTimeout_HAL();
 }
@@ -126,6 +135,12 @@ void getKeys(rawKey rawKeys[keypadROWS][keypadCOLS], unsigned long currentMillis
   keys_getKeys_HAL(rawKeys, currentMillis);
 }
 #if(OMOTE_HARDWARE_REV >= 5)
+void blink_keyboardBacklight(uint32_t durationMs, uint16_t phaseMs, uint8_t brightness) {
+  blink_keyboardBacklight_HAL(durationMs, phaseMs, brightness);
+}
+void set_keyboardBacklightLongBlink(bool enabled, uint16_t phaseMs, uint8_t brightness) {
+  set_keyboardBacklightLongBlink_HAL(enabled, phaseMs, brightness);
+}
 void update_keyboardBrightness(void) {
   update_keyboardBrightness_HAL();
 }
@@ -186,20 +201,26 @@ void keyboardBLE_startAdvertisingDirected(std::string peerAddress, bool isRandom
 void keyboardBLE_stopAdvertising() {
   keyboardBLE_stopAdvertising_HAL();
 }
-void keyboardBLE_printConnectedClients() {
-  keyboardBLE_printConnectedClients_HAL();
+std::string keyboardBLE_printDevices() {
+  return keyboardBLE_printDevices_HAL();
+}
+std::string keyboardBLE_printConnectedClients() {
+  return keyboardBLE_printConnectedClients_HAL();
 }
 void keyboardBLE_disconnectAllClients() {
   keyboardBLE_disconnectAllClients_HAL();
 }
-void keyboardBLE_printBonds() {
-  keyboardBLE_printBonds_HAL();
+std::string keyboardBLE_printBonds() {
+  return keyboardBLE_printBonds_HAL();
 }
 std::string keyboardBLE_getBonds() {
   return keyboardBLE_getBonds_HAL();
 }
 void keyboardBLE_deleteBonds() {
   keyboardBLE_deleteBonds_HAL();
+}
+void keyboardBLE_deleteBond(int index) {
+  keyboardBLE_deleteBond_HAL(index);
 }
 bool keyboardBLE_forceConnectionToAddress(std::string peerAddress) {
   return keyboardBLE_forceConnectionToAddress_HAL(peerAddress);
@@ -268,6 +289,30 @@ bool publishMQTTMessage(const char *topic, const char *payload) {
 }
 void wifi_shutdown() {
   wifi_shutdown_HAL();
+}
+#endif
+// --- telnet -----------------------------------------------------------------
+#if (ENABLE_WIFI_AND_MQTT == 1)
+void init_telnet(void) {
+  init_telnet_HAL();
+}
+void telnet_loop(void) {
+  telnet_loop_HAL();
+}
+bool telnet_readLine(char* buf, size_t maxLen) {
+  return telnet_readLine_HAL(buf, maxLen);
+}
+void telnet_endOfCommand(void) {
+  telnet_endOfCommand_HAL();
+}
+void telnet_write(const char* text) {
+  telnet_write_HAL(text);
+}
+void telnet_notify(const char* text) {
+  telnet_notify_HAL(text);
+}
+void telnet_close(void) {
+  telnet_close_HAL();
 }
 #endif
 // --- OTA --------------------------------------------------------------------

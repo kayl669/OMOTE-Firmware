@@ -14,6 +14,9 @@ struct rawKey {
   char keyChar;
   keypad_rawKeyStates rawKeyState;
 };
+#if(OMOTE_HARDWARE_REV >= 5)
+uint8_t keyboardBrightness = 255;
+#endif
 
 void keys_getKeys_HAL(void* ptr, unsigned long currentMillis) {
 
@@ -48,3 +51,21 @@ void keys_getKeys_HAL(void* ptr, unsigned long currentMillis) {
   // remove first event
   keyEventsQueue.pop();
 }
+
+#if(OMOTE_HARDWARE_REV >= 5)
+void update_keyboardBrightness_HAL(void) {
+}
+
+// there is no keyboard backlight in the simulator
+void blink_keyboardBacklight_HAL(uint32_t durationMs, uint16_t phaseMs, uint8_t brightness) {
+}
+void set_keyboardBacklightLongBlink_HAL(bool enabled, uint16_t phaseMs, uint8_t brightness) {
+}
+
+uint8_t get_keyboardBrightness_HAL() {
+  return keyboardBrightness;
+};
+void set_keyboardBrightness_HAL(uint8_t aKeyboardBrightness) {
+  keyboardBrightness = aKeyboardBrightness;
+};
+#endif

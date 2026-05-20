@@ -1,4 +1,5 @@
 #include <Preferences.h>
+#include "preferencesStorage_hal_esp32.h"
 #include "sleep_hal_esp32.h"
 #include "tft_hal_esp32.h"
 #include "keypad_keys_hal_esp32.h"
@@ -9,6 +10,7 @@ std::string activeScene;
 std::string activeGUIname;
 int activeGUIlist;
 int lastActiveGUIlistIndex;
+BacklightSignalSettings backlightSignalSettings;
 
 void init_preferences_HAL(void) {
   // Restore settings from internal flash memory
@@ -24,6 +26,16 @@ void init_preferences_HAL(void) {
     #if(OMOTE_HARDWARE_REV >= 5)
     set_keyboardBrightness_HAL(preferences.getUInt("kbBrightness", 255));
     #endif
+    // from backlightSignal.h. If a value was never saved, the default is kept
+    BacklightSignalSettings &s = backlightSignalSettings;
+    s.low.batteryPercent    = preferences.getUInt("sigLowPct",   s.low.batteryPercent);
+    s.low.seconds           = preferences.getUInt("sigLowSec",   s.low.seconds);
+    s.low.phaseMs           = preferences.getUInt("sigLowMs",    s.low.phaseMs);
+    s.low.lightPercent      = preferences.getUInt("sigLowLight", s.low.lightPercent);
+    s.charge.batteryPercent = preferences.getUInt("sigChgPct",   s.charge.batteryPercent);
+    s.charge.seconds        = preferences.getUInt("sigChgSec",   s.charge.seconds);
+    s.charge.phaseMs        = preferences.getUInt("sigChgMs",    s.charge.phaseMs);
+    s.charge.lightPercent   = preferences.getUInt("sigChgLight", s.charge.lightPercent);
     // from here
     activeScene = std::string(preferences.getString("currentScene").c_str());
     activeGUIname = std::string(preferences.getString("currentGUIname").c_str());
@@ -50,6 +62,15 @@ void save_preferences_HAL(void) {
   preferences.putUInt("kbBrightness", get_keyboardBrightness_HAL());
   // Serial.printf("Preferences saved: blBrightness %d, kbBrightness %d, GUI %s, scene %s\r\n", get_backlightBrightness_HAL(), get_keyboardBrightness_HAL(), activeGUIname.c_str(), activeScene.c_str());
   #endif
+  // from backlightSignal.h
+  preferences.putUInt("sigLowPct",   backlightSignalSettings.low.batteryPercent);
+  preferences.putUInt("sigLowSec",   backlightSignalSettings.low.seconds);
+  preferences.putUInt("sigLowMs",    backlightSignalSettings.low.phaseMs);
+  preferences.putUInt("sigLowLight", backlightSignalSettings.low.lightPercent);
+  preferences.putUInt("sigChgPct",   backlightSignalSettings.charge.batteryPercent);
+  preferences.putUInt("sigChgSec",   backlightSignalSettings.charge.seconds);
+  preferences.putUInt("sigChgMs",    backlightSignalSettings.charge.phaseMs);
+  preferences.putUInt("sigChgLight", backlightSignalSettings.charge.lightPercent);
   // from here
   preferences.putString("currentScene", activeScene.c_str());
   preferences.putString("currentGUIname", activeGUIname.c_str());
@@ -61,6 +82,12 @@ void save_preferences_HAL(void) {
   preferences.end();
 }
 
+BacklightSignalSettings get_backlightSignalSettings_HAL() {
+  return backlightSignalSettings;
+}
+void set_backlightSignalSettings_HAL(BacklightSignalSettings aSettings) {
+  backlightSignalSettings = aSettings;
+}
 std::string get_activeScene_HAL() {
   return activeScene;
 }

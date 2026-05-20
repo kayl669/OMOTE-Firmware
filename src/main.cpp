@@ -8,6 +8,7 @@
 //   special
 #include "devices/misc/device_specialCommands.h"
 #include "applicationInternal/commandHandler.h"
+#include "devices/misc/device_serial/device_serial.h"
 //   keyboards
 #if (ENABLE_KEYBOARD_MQTT == 1)
 #include "devices/keyboard/device_keyboard_mqtt/device_keyboard_mqtt.h"
@@ -57,6 +58,8 @@
 #include "scenes/scene_chromecast.h"
 #include "scenes/scene_appleTV.h"
 #include "applicationInternal/scenes/sceneHandler.h"
+// battery state shown with the keyboard backlight
+#include "applicationInternal/backlightSignal.h"
 
 #if defined(ARDUINO)
 // in case of Arduino we have a setup() and a loop()
@@ -88,6 +91,7 @@ int main(int argc, char *argv[]) {
 
   // setup IR sender
   init_infraredSender();
+  register_device_serial();
 
   // register commands for the devices
   register_specialCommands();
@@ -171,6 +175,8 @@ int main(int argc, char *argv[]) {
   // init WiFi - needs to be after init_gui() because WifiLabel must be available
   #if (ENABLE_WIFI_AND_MQTT == 1)
   init_mqtt();
+  // telnet server for the same commands as on the serial port
+  init_telnet();
   #endif
 
 #if (ENABLE_OTA == 1)
@@ -178,6 +184,11 @@ int main(int argc, char *argv[]) {
     set_ota_progress_cb(ota_gui_set_progress);
     init_ota();
 #endif
+
+  // has to be at the end of setup, because the blinking is done in loop()
+  #if(OMOTE_HARDWARE_REV >= 5)
+  warnIfBatteryLowOnPickUp();
+  #endif
 
   omote_log_i("Setup finished in %lu ms.\r\n", millis());
 
@@ -241,6 +252,10 @@ void loop(unsigned long *pIMUTaskTimer, unsigned long *pUpdateStatusTimer) {
 
     // update user_led, battery, BLE, memoryUsage on GUI
     updateHardwareStatusAndShowOnGUI();
+    #if(OMOTE_HARDWARE_REV >= 5)
+    showChargingState();
+    #endif
   }
 
+  handleSerialInput();
 }

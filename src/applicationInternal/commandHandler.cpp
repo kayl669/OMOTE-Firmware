@@ -14,6 +14,8 @@
 #include "guis/gui_irReceiver.h"
 // show received BLE connection messages
 #include "guis/gui_BLEpairing.h"
+// show received IR codes and BLE messages in the telnet session
+#include "devices/misc/device_serial/device_serial.h"
 
 uint16_t COMMAND_UNKNOWN;
 
@@ -58,15 +60,39 @@ uint16_t KEYBOARD_VOLUME_INCREMENT          ; //PPCAT(KEYBOARD_PREFIX, VOLUME_IN
 uint16_t KEYBOARD_VOLUME_DECREMENT          ; //PPCAT(KEYBOARD_PREFIX, VOLUME_DECREMENT)
 
 std::map<uint16_t, commandData> commands;
+static std::map<std::string, uint16_t> commandNames;
 
 uint16_t uniqueCommandID = 0;
 
 // register a command and give it a command id
-void register_command(uint16_t *command, commandData aCommandData) {
+void register_command_with_name(const char* name, uint16_t *command, commandData aCommandData) {
   *command = uniqueCommandID;
   uniqueCommandID++;
 
   commands[*command] = aCommandData;
+
+  // the name is given as written in the call of register_command(), e.g. "&SONY_POWER_ON"
+  while (*name == '&' || *name == ' ') name++;
+  commandNames[name] = *command;
+}
+
+const std::map<std::string, uint16_t>& get_command_names() {
+  return commandNames;
+}
+
+commandPayloadModes get_command_payload_mode(uint16_t command) {
+  if (commands.count(command) == 0) return PAYLOAD_NOT_ALLOWED;
+  const commandData &data = commands.at(command);
+
+  #if (ENABLE_WIFI_AND_MQTT == 1)
+  // a MQTT command can be registered with its topic only, then the payload has to be given when executing it
+  if (data.commandHandler == MQTT) return (data.commandPayloads.size() < 2) ? PAYLOAD_REQUIRED : PAYLOAD_OPTIONAL;
+  #endif
+  #if (ENABLE_KEYBOARD_BLE == 1)
+  if (data.commandHandler == BLE_KEYBOARD) return PAYLOAD_OPTIONAL;
+  #endif
+  // for all other commands, a payload would be ignored or, for IR, replace the code to be sent
+  return PAYLOAD_NOT_ALLOWED;
 }
 // only get a unique ID. used by KEYBOARD_DUMMY and COMMAND_UNKNOWN
 void get_uniqueCommandID(uint16_t *command) {
@@ -257,13 +283,21 @@ void executeCommand(uint16_t command, std::string additionalPayload) {
 }
 
 void receiveNewIRmessage_cb(std::string message) {
+  // keep device awake while IR codes are being decoded
+  setLastActivityTimestamp();
   showNewIRmessage(message);
+  #if (ENABLE_WIFI_AND_MQTT == 1)
+  showOnTelnet("IR received: " + message);
+  #endif
 }
 
 #if (ENABLE_KEYBOARD_BLE == 1)
 // used as callback from hardware
 void receiveBLEmessage_cb(std::string message) {
   addBLEmessage(message);
+  #if (ENABLE_WIFI_AND_MQTT == 1)
+  showOnTelnet("BLE: " + message);
+  #endif
 }
 
 #endif

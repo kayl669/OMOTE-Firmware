@@ -224,9 +224,54 @@ void keys_getKeys_HAL(void* ptr, unsigned long currentMillis) {
 }
 
 #if(OMOTE_HARDWARE_REV >= 5)
+// short blink, ends by itself
+static unsigned long blinkStartTime = 0;
+static unsigned long blinkDurationMs = 0; // 0 means that there is no blinking in progress
+static uint16_t blinkPhaseMs = 1;         // duration of each "on" and each "off" phase
+static uint8_t blinkBrightness = 0;
+
+void blink_keyboardBacklight_HAL(uint32_t durationMs, uint16_t phaseMs, uint8_t brightness) {
+  blinkStartTime = millis();
+  blinkDurationMs = durationMs;
+  blinkPhaseMs = max((uint16_t)1, phaseMs);
+  blinkBrightness = brightness;
+}
+
+// long blink, lasts until it is disabled
+static unsigned long longBlinkStartTime = 0;
+static bool longBlinkEnabled = false;
+static uint16_t longBlinkPhaseMs = 1;
+static uint8_t longBlinkBrightness = 0;
+
+void set_keyboardBacklightLongBlink_HAL(bool enabled, uint16_t phaseMs, uint8_t brightness) {
+  // only restart the blink cycle when it gets enabled, not every time this is called
+  if (enabled && !longBlinkEnabled) {
+    longBlinkStartTime = millis();
+  }
+  longBlinkEnabled = enabled;
+  longBlinkPhaseMs = max((uint16_t)1, phaseMs);
+  longBlinkBrightness = brightness;
+}
+
 void update_keyboardBrightness_HAL(void) {
   // A variable declared static inside a function is visible only inside that function, exists only once (not created/destroyed for each call) and is permanent. It is in a sense a private global variable.
   static int fadeInTimer = millis(); // fadeInTimer = time after setup
+  // blink without blocking the main loop. The user setting is ignored, so it blinks even if the backlight is dimmed or off.
+  // The long blink has priority and lasts until it is disabled.
+  if (longBlinkEnabled) {
+    unsigned long phase = (millis() - longBlinkStartTime) / longBlinkPhaseMs;
+    ledcWrite(LEDC_CHANNEL_6, (phase % 2 == 0) ? longBlinkBrightness : 0);
+    return;
+  }
+  if (blinkDurationMs > 0) {
+    unsigned long elapsed = millis() - blinkStartTime;
+    if (elapsed < blinkDurationMs) {
+      ledcWrite(LEDC_CHANNEL_6, ((elapsed / blinkPhaseMs) % 2 == 0) ? blinkBrightness : 0);
+      return;
+    }
+    blinkDurationMs = 0;
+  }
+
   if (millis() < fadeInTimer + keyboardBrightness) {
     // after boot or wakeup, fade in keyboard brightness
     // fade in lasts for <keyboardBrightness> ms

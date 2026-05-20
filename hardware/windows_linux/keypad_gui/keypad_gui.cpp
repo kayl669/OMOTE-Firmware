@@ -1,5 +1,7 @@
 #include "keypad_gui.h"
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
@@ -30,11 +32,12 @@ int pnpoly(int nvert, float *vertx, float *verty, float testx, float testy)
 int event_filter(void *userdata, SDL_Event * event) {
   KeyPadManager* manager = (KeyPadManager*) userdata;
 
-  // Capture all window close events
-  if (event->type == SDL_WINDOWEVENT) {
-    if (event->window.event == SDL_WINDOWEVENT_CLOSE) {
-      exit(0);
-    }
+  // Capture all window close events, and quit requests like Ctrl+C
+  if (event->type == SDL_QUIT ||
+      (event->type == SDL_WINDOWEVENT && event->window.event == SDL_WINDOWEVENT_CLOSE)) {
+    fflush(stdout);
+    // not exit(): its cleanup of the streams can block, because the thread reading the console holds stdin
+    _Exit(0);
   }
 
   // The event api isn't consistent with the window id, so we need to check the event type

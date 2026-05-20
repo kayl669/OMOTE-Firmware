@@ -6,6 +6,22 @@ OTA is enabled for the `esp32-s3-Rev5` environment. After flashing once via USB 
 
 The device runs an HTTP server on port 3232. Your machine POSTs the firmware binary to it — all connections are host → device, so it works across VLANs as long as your machine can reach the IoT VLAN (no return connection required).
 
+### Password
+
+OTA updates and [telnet](#telnet) are protected by the same password, taken from the environment variable `OTA_PASSWORD`. It is compiled into the firmware and used by the upload script. For example on Windows:
+
+```
+setx OTA_PASSWORD "your password"
+```
+
+Then restart the terminal and the IDE, so that they see the variable.
+
+**A firmware built without the variable has OTA and telnet disabled**, also when it is flashed by USB. The upload script refuses to send such a firmware.
+
+To change the password, set the new one in `OTA_PASSWORD` and the old one in `OTA_PASSWORD_OLD` for the next upload.
+
+The password is sent unencrypted, by OTA (HTTP basic authentication) as well as by telnet. After 3 wrong passwords, further attempts are refused for 30 seconds.
+
 **To push an OTA update:** select the `esp32-s3-Rev5-ota` environment in PlatformIO and run **Upload**. The device must be awake and on WiFi. In VSCode this environment appears at the bottom of the Project Tasks panel — scroll down if you don't see it. You can also use the CLI:
 
 ```
@@ -15,7 +31,7 @@ pio run -e esp32-s3-Rev5-ota -t upload
 Or with curl directly:
 
 ```
-curl -F "firmware=@.pio/build/esp32-s3-Rev5/firmware.bin" http://OMOTE:3232/update
+curl -u omote -F "firmware=@.pio/build/esp32-s3-Rev5/firmware.bin" http://OMOTE:3232/update
 ```
 
 If `OMOTE` doesn't resolve, replace `upload_port` in `platformio.ini` (or the URL above) with the device's IP address, visible in the serial console at startup.
@@ -29,6 +45,37 @@ If `OMOTE` doesn't resolve, replace `upload_port` in `platformio.ini` (or the UR
 2. Flash via USB — this restores the single 12.5 MB app slot.
 
 No other source files need touching; all OTA code is `#if (ENABLE_OTA == 1)` gated in `hardware/ESP32/ota_hal_esp32.cpp`.
+
+## Battery state on the keyboard backlight
+
+Only for hardware rev 5 and higher.
+
+- When the remote is picked up and wakes from sleep with a battery below 10%, the keyboard backlight blinks for 5 seconds. This needs "lift to wake" to be enabled.
+- While charging with a battery below 95%, the keyboard backlight does a long blink (2 seconds on at 25% brightness, 2 seconds off) and the remote stays awake, with the screen on. Plugging in the cable does not wake the remote by itself.
+- Both signals are configured with the same commands on the serial port (115200 baud), with `<s>` being `low` or `charge`: `blink <s>` (battery level, 0 = off), `blink <s> time`, `blink <s> speed` and `blink <s> light`. `blink reset` restores the defaults.
+
+### Telnet
+
+The same commands are available over the network with telnet (port 23). It is enabled as soon as a [password](#password) is set.
+
+Connect with `telnet <hostname or IP address>`, or with PuTTY and the connection type "Telnet". Type `exit` to close the session.
+
+Activities can be started and single commands can be sent, by telnet as well as on the serial port. Names are not case sensitive.
+
+| Command | Effect |
+|---|---|
+| `scene` | List the activities, the active one is marked with `*` |
+| `scene Regarder un film` | Start an activity. `scene Off` switches everything off |
+| `scene TV force` | Run the start sequence again, even if the activity is already active |
+| `cmd list` / `cmd list bose` | List all commands, or those containing a text |
+| `cmd BOSE_VOL_UP` | Send a command, named like in the source code |
+| `cmd HOME_MQTT_COMMAND toggle:switch.eclairage_salon` | Send a command with a payload (MQTT and BLE keyboard only) |
+
+- Telnet is **not encrypted**: the password and the commands can be read on the network. Only use it on a network you trust.
+- The remote can only be reached while it is awake and connected to WiFi. An open session keeps it awake, and is closed after 5 minutes without activity.
+- There is one session at a time. After 3 wrong passwords, new connections are refused for 30 seconds.
+- Received IR codes (`ir on`) and BLE messages are shown in the session. The other logs are only on the serial port.
+
 
 ---
 

@@ -25,16 +25,20 @@ void keyboardBLE_stopAdvertising_HAL() {
   bleKeyboard.stopAdvertising();
 }
 
-void keyboardBLE_printConnectedClients_HAL() {
-  bleKeyboard.printConnectedClients();
+std::string keyboardBLE_printDevices_HAL() {
+  return bleKeyboard.printDevices();
+}
+
+std::string keyboardBLE_printConnectedClients_HAL() {
+  return bleKeyboard.printConnectedClients();
 }
 
 void keyboardBLE_disconnectAllClients_HAL() {
   bleKeyboard.disconnectAllClients();
 }
 
-void keyboardBLE_printBonds_HAL() {
-  bleKeyboard.printBonds();
+std::string keyboardBLE_printBonds_HAL() {
+  return bleKeyboard.printBonds();
 }
 
 std::string keyboardBLE_getBonds_HAL() {
@@ -43,6 +47,10 @@ std::string keyboardBLE_getBonds_HAL() {
 
 void keyboardBLE_deleteBonds_HAL() {
   bleKeyboard.deleteBonds();
+}
+
+void keyboardBLE_deleteBond_HAL(int index) {
+  bleKeyboard.deleteBond(index);
 }
 
 bool keyboardBLE_forceConnectionToAddress_HAL(std::string peerAddress) {

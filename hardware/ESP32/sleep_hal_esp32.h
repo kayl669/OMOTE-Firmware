@@ -17,6 +17,7 @@ void init_sleep_HAL();
 void init_IMU_HAL();
 void check_activity_HAL();
 void setLastActivityTimestamp_HAL();
+bool get_wokenUpByMotion_HAL();
 
 uint32_t get_sleepTimeout_HAL();
 void set_sleepTimeout_HAL(uint32_t aSleepTimeout);

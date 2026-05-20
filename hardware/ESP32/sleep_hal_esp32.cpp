@@ -255,6 +255,10 @@ void init_sleep_HAL() {
   gpio_deep_sleep_hold_dis();
 }
 
+bool get_wokenUpByMotion_HAL() {
+  return wakeup_reason == WAKEUP_BY_IMU;
+}
+
 void init_IMU_HAL(void) {
   // setup IMU to recognize motion
   IMU.settings.accelSampleRate = 50;  //Hz.  Can be: 0,1,10,25,50,100,200,400,1600,5000 Hz

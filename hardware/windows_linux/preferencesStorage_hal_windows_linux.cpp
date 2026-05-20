@@ -1,4 +1,5 @@
 #include <string>
+#include "preferencesStorage_hal_windows_linux.h"
 
 enum GUIlists {
 // MAIN_GUI_LIST: we are in the main_gui_list (with the scene selector as first gui), either if a scene is active or not
@@ -21,6 +22,14 @@ std::string activeScene;
 std::string activeGUIname;
 int activeGUIlist;
 int lastActiveGUIlistIndex;
+BacklightSignalSettings backlightSignalSettings;
+
+BacklightSignalSettings get_backlightSignalSettings_HAL() {
+  return backlightSignalSettings;
+}
+void set_backlightSignalSettings_HAL(BacklightSignalSettings aSettings) {
+  backlightSignalSettings = aSettings;
+}
 
 void init_preferences_HAL(void) {
   // set some values for tests

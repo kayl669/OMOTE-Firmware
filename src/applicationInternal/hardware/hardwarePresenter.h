@@ -4,6 +4,7 @@
 #include <string>
 #include "applicationInternal/hardware/IRremoteProtocols.h"
 #include "applicationInternal/hardware/arduinoLayer.h"
+#include "applicationInternal/backlightSignal.h"
 
 // --- hardware general -------------------------------------------------------
 void init_hardware_general(void);
@@ -19,6 +20,8 @@ int get_activeGUIlist();
 void set_activeGUIlist(int anActiveGUIlist);
 int get_lastActiveGUIlistIndex();
 void set_lastActiveGUIlistIndex(int aGUIlistIndex);
+BacklightSignalSettings get_backlightSignalSettings();
+void set_backlightSignalSettings(BacklightSignalSettings aSettings);
 
 // --- user led ---------------------------------------------------------------
 void init_userled(void);
@@ -33,6 +36,8 @@ void init_sleep();
 void init_IMU();
 void check_activity();
 void setLastActivityTimestamp();
+// true if the device was woken up from sleep because it was moved, e.g. picked up
+bool get_wokenUpByMotion();
 uint32_t get_sleepTimeout();
 void set_sleepTimeout(uint32_t aSleepTimeout);
 bool get_wakeupByIMUEnabled();
@@ -57,6 +62,10 @@ extern rawKey rawKeys[][keypadCOLS];
 void getKeys(rawKey (*rawKeys)[keypadCOLS], unsigned long currentMillis);
 #if(OMOTE_HARDWARE_REV >= 5)
 void update_keyboardBrightness(void);
+// blinks the keyboard backlight. Non blocking, update_keyboardBrightness() has to be called in the main loop
+void blink_keyboardBacklight(uint32_t durationMs, uint16_t phaseMs, uint8_t brightness);
+// slow blinking of the keyboard backlight, until disabled again. Has priority over blink_keyboardBacklight()
+void set_keyboardBacklightLongBlink(bool enabled, uint16_t phaseMs, uint8_t brightness);
 uint8_t get_keyboardBrightness();
 void set_keyboardBrightness(uint8_t aKeyboardBrightness);
 #endif
@@ -101,11 +110,13 @@ void keyboardBLE_startAdvertisingForAll();
 void keyboardBLE_startAdvertisingWithWhitelist(std::string peersAllowed);
 void keyboardBLE_startAdvertisingDirected(std::string peerAddress, bool isRandomAddress);
 void keyboardBLE_stopAdvertising();
-void keyboardBLE_printConnectedClients();
+std::string keyboardBLE_printDevices();
+std::string keyboardBLE_printConnectedClients();
 void keyboardBLE_disconnectAllClients();
-void keyboardBLE_printBonds();
+std::string keyboardBLE_printBonds();
 std::string keyboardBLE_getBonds();
 void keyboardBLE_deleteBonds();
+void keyboardBLE_deleteBond(int index);
 bool keyboardBLE_forceConnectionToAddress(std::string peerAddress);
 bool keyboardBLE_isAdvertising();
 bool keyboardBLE_isConnected();
@@ -134,6 +145,18 @@ bool getIsWifiConnected();
 void mqtt_loop();
 bool publishMQTTMessage(const char *topic, const char *payload);
 void wifi_shutdown();
+#endif
+
+// --- telnet -----------------------------------------------------------------
+#if (ENABLE_WIFI_AND_MQTT == 1)
+// has to be called after init_mqtt()
+void init_telnet(void);
+void telnet_loop(void);
+bool telnet_readLine(char* buf, size_t maxLen);
+void telnet_endOfCommand(void);
+void telnet_write(const char* text);
+void telnet_notify(const char* text);
+void telnet_close(void);
 #endif
 
 // --- OTA --------------------------------------------------------------------

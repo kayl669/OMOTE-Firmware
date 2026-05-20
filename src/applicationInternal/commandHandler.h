@@ -110,7 +110,14 @@ struct commandData {
 };
 
 // register a command and give it a command id
-void register_command(uint16_t *command, commandData aCommandData);
+void register_command_with_name(const char* name, uint16_t *command, commandData aCommandData);
+// The name of the variable is also the name of the command, e.g. "SONY_POWER_ON". It is used by telnet and on the serial port.
+#define register_command(command, ...) register_command_with_name(#command, command, __VA_ARGS__)
+// all registered commands, by their name
+const std::map<std::string, uint16_t>& get_command_names();
+// whether a payload can or has to be given when executing a command
+enum commandPayloadModes {PAYLOAD_NOT_ALLOWED, PAYLOAD_OPTIONAL, PAYLOAD_REQUIRED};
+commandPayloadModes get_command_payload_mode(uint16_t command);
 // only get a unique ID. used by KEYBOARD_DUMMY and COMMAND_UNKNOWN
 void get_uniqueCommandID(uint16_t *command);
 
