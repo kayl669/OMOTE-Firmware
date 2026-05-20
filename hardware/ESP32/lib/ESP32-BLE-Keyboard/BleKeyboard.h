@@ -172,11 +172,13 @@ public:
   void startAdvertisingWithWhitelist(std::string peersAllowed);
   void startAdvertisingDirected(std::string peerAddress, bool isRandomAddress);
   void stopAdvertising();
-  void printConnectedClients();
+  std::string printDevices();
+  std::string printConnectedClients();
   void disconnectAllClients();
-  void printBonds();
+  std::string printBonds();
   std::string getBonds();
   void deleteBonds();
+  void deleteBond(int index);
   bool startAdvertisingIfExactlyOneBondExists();
   bool advertiseAndWaitForConnection(std::string peerAddress);
   bool forceConnectionToAddress(std::string peerAddress);

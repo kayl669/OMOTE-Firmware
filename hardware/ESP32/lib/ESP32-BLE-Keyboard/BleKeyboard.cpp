@@ -781,13 +781,36 @@ void BleKeyboard::stopAdvertising() {
   ESP_LOGI(LOG_TAG, "Advertising stopped");
 }
 
-void BleKeyboard::printConnectedClients() {
+std::string BleKeyboard::printDevices() {
+	std::string message = "";
+	char buffer[100];
+
+	NimBLEScan *scan = NimBLEDevice::getScan();
+	scan->setActiveScan(true);
+	NimBLEScanResults r = scan->start(10);
+
+	sprintf(buffer, "Devices count: %d", r.getCount());
+	message = buffer;
+
+	std::vector<uint16_t> m_connectedPeersVec = NimBLEDevice::getServer()->getPeerDevices();
+	for (int i = 0; i < r.getCount(); i++) {
+		auto d = r.getDevice(i);
+		sprintf(buffer, "\n MAC: %s  RSSI: %d  Name: %s", d.getAddress().toString().c_str(), d.getRSSI(),
+		        d.getName().c_str());
+		message = message + buffer;
+	}
+	if (thisBLEKeyboardMessage_cb != NULL) {
+		thisBLEKeyboardMessage_cb(message);
+	}
+	return message;
+}
+
+std::string BleKeyboard::printConnectedClients() {
   std::string message = "";
   char buffer[50];
 
   sprintf(buffer, "Connected count: %d", NimBLEDevice::getServer()->getConnectedCount());
   message = buffer;
-  ESP_LOGI(LOG_TAG, "%s", buffer);
 
   std::vector<uint16_t> m_connectedPeersVec = NimBLEDevice::getServer()->getPeerDevices();
   for (std::vector<uint16_t>::iterator it = m_connectedPeersVec.begin() ; it != m_connectedPeersVec.end(); ++it) {
@@ -798,11 +821,11 @@ void BleKeyboard::printConnectedClients() {
     #endif
     sprintf(buffer, "\n client %d: %s", *it, NimBLEAddress(connInfo.getAddress()).toString().c_str());
     message = message + buffer;
-    ESP_LOGI(LOG_TAG, "%s", buffer);
   }
   if (thisBLEKeyboardMessage_cb != NULL) {
     thisBLEKeyboardMessage_cb(message);
   }
+  return message;
 }
 
 void BleKeyboard::disconnectAllClients() {
@@ -814,7 +837,7 @@ void BleKeyboard::disconnectAllClients() {
   }
 }
 
-void BleKeyboard::printBonds() {
+std::string BleKeyboard::printBonds() {
   std::string message = "";
   char buffer[50];
 
@@ -822,16 +845,15 @@ void BleKeyboard::printBonds() {
 
   sprintf(buffer, "NumBonds: %d", NimBLEDevice::getNumBonds());
   message = buffer;
-  ESP_LOGI(LOG_TAG, "%s", buffer);
 
   for (int i=0; i<NimBLEDevice::getNumBonds(); i++) {
     sprintf(buffer, "\n bond %d: %s", i, NimBLEDevice::getBondedAddress(i).toString().c_str());
     message = message + buffer;
-    ESP_LOGI(LOG_TAG, "%s", buffer);
   }
   if (thisBLEKeyboardMessage_cb != NULL) {
     thisBLEKeyboardMessage_cb(message);
   }
+  return message;
 }
 
 std::string BleKeyboard::getBonds() {
@@ -850,6 +872,10 @@ std::string BleKeyboard::getBonds() {
 void BleKeyboard::deleteBonds() {
   // https://piratecomm.wordpress.com/2014/01/19/ble-pairing-vs-bonding/
   NimBLEDevice::deleteAllBonds();
+}
+
+void BleKeyboard::deleteBond(int index) {
+  NimBLEDevice::deleteBond(index);
 }
 
 bool BleKeyboard::startAdvertisingIfExactlyOneBondExists() {

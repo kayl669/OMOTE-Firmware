@@ -8,6 +8,7 @@
 //   special
 #include "devices/misc/device_specialCommands.h"
 #include "applicationInternal/commandHandler.h"
+#include "devices/misc/device_serial/device_serial.h"
 //   keyboards
 #if (ENABLE_KEYBOARD_MQTT == 1)
 #include "devices/keyboard/device_keyboard_mqtt/device_keyboard_mqtt.h"
@@ -85,6 +86,7 @@ int main(int argc, char *argv[]) {
 
   // setup IR sender
   init_infraredSender();
+  register_device_serial();
 
   // register commands for the devices
   register_specialCommands();
@@ -230,4 +232,5 @@ void loop(unsigned long *pIMUTaskTimer, unsigned long *pUpdateStatusTimer) {
     updateHardwareStatusAndShowOnGUI();
   }
 
+  handleSerialInput();
 }
