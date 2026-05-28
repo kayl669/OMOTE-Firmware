@@ -276,6 +276,25 @@ void wifi_shutdown() {
   wifi_shutdown_HAL();
 }
 #endif
+// --- OTA --------------------------------------------------------------------
+#if (ENABLE_OTA == 1)
+void
+set_ota_start_cb(tOtaStartCallback cb) {
+    set_ota_start_cb_HAL(cb);
+}
+void
+set_ota_progress_cb(tOtaProgressCallback cb) {
+    set_ota_progress_cb_HAL(cb);
+}
+void
+init_ota(void) {
+    init_ota_HAL();
+}
+void
+ota_loop(void) {
+    ota_loop_HAL();
+}
+#endif
 
 // --- memory usage -----------------------------------------------------------
 void get_heapUsage(unsigned long *heapSize, unsigned long *freeHeap, unsigned long *maxAllocHeap, unsigned long *minFreeHeap) {

@@ -44,6 +44,9 @@
 #include "devices/AVreceiver/device_yamahaAmp/gui_yamahaAmp.h"
 #include "devices/mediaPlayer/device_appleTV/gui_appleTV.h"
 #include "devices/misc/device_smarthome/gui_smarthome.h"
+#if (ENABLE_OTA == 1)
+#include "guis/gui_ota.h"
+#endif
 //#include "devices/misc/device_airconditioner/gui_airconditioner.h"
 #include "applicationInternal/keys.h"
 #include "applicationInternal/gui/guiStatusUpdate.h"
@@ -152,7 +155,7 @@ int main(int argc, char *argv[]) {
   init_gui(); // This has to come before any other i2c devices are initialized, otherwise the i2c bus will not be powered
   setLabelActiveScene();
   gui_loop(); // Run the LVGL UI once before the loop takes over
-  
+
   // Power Pin and battery monitor definition
   init_battery();
 
@@ -171,6 +174,12 @@ int main(int argc, char *argv[]) {
   #if (ENABLE_WIFI_AND_MQTT == 1)
   init_mqtt();
   #endif
+
+#if (ENABLE_OTA == 1)
+    set_ota_start_cb(ota_gui_start);
+    set_ota_progress_cb(ota_gui_set_progress);
+    init_ota();
+#endif
 
   omote_log_i("Setup finished in %lu ms.\r\n", millis());
 
@@ -212,6 +221,10 @@ void loop(unsigned long *pIMUTaskTimer, unsigned long *pUpdateStatusTimer) {
   // call mqtt loop to receive mqtt messages, if you are subscribed to some topics
   #if (ENABLE_WIFI_AND_MQTT == 1)
   mqtt_loop();
+  #endif
+
+  #if (ENABLE_OTA == 1)
+  ota_loop();
   #endif
 
   // --- every 100 ms -------------------------------------------------------------------

@@ -6,6 +6,7 @@
 */
 #define WIFI_SSID                  "YourWifiSSID"              // override it in file "secrets_override.h"
 #define WIFI_PASSWORD              "YourWifiPassword"          // override it in file "secrets_override.h"
+#define WIFI_HOSTNAME              "YourHostName"              // override it in file "secrets_override.h"
 
 #define MQTT_SERVER                "IPAddressOfYourBroker"     // override it in file "secrets_override.h"
 #define MQTT_SERVER_PORT           1883                        // override it in file "secrets_override.h"
