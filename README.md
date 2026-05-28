@@ -1,5 +1,47 @@
 # OMOTE - Open Universal Remote - Firmware
 
+## OTA (Over-the-Air) Updates
+
+OTA is enabled for the `esp32-s3-Rev5` environment. After flashing once via USB with the new partition table, subsequent firmware updates can be pushed wirelessly.
+
+The device runs an HTTP server on port 3232. Your machine POSTs the firmware binary to it — all connections are host → device, so it works across VLANs as long as your machine can reach the IoT VLAN (no return connection required).
+
+**To push an OTA update:** select the `esp32-s3-Rev5-ota` environment in PlatformIO and run **Upload**. The device must be awake and on WiFi. In VSCode this environment appears at the bottom of the Project Tasks panel — scroll down if you don't see it. You can also use the CLI:
+
+```
+pio run -e esp32-s3-Rev5-ota -t upload
+```
+
+Or with curl directly:
+
+```
+curl -F "firmware=@.pio/build/esp32-s3-Rev5/firmware.bin" http://OMOTE:3232/update
+```
+
+If `OMOTE` doesn't resolve, replace `upload_port` in `platformio.ini` (or the URL above) with the device's IP address, visible in the serial console at startup.
+
+**To disable OTA** (e.g. if the firmware grows too large for the 6 MB slot):
+
+1. In [platformio.ini](platformio.ini), under `[env:esp32-s3-Rev5]`:
+   - Change `board_build.partitions` back to `noota_16MB_custom.csv`
+   - In `build_unflags`: remove `-D ENABLE_OTA=0`
+   - In `build_flags`: change `-D ENABLE_OTA=1` to `-D ENABLE_OTA=0`
+2. Flash via USB — this restores the single 12.5 MB app slot.
+
+No other source files need touching; all OTA code is `#if (ENABLE_OTA == 1)` gated in `hardware/ESP32/ota_hal_esp32.cpp`.
+
+---
+
+GUIS - I've used Squareline Studio for some of this stuff, and cherry-picked the output code
+It is a completely manual process, unlike some others I've worked on.
+
+I have backing art on some screens, Squareline Studio generated the code, but the asset files I've used come from the online [image converter](https://lvgl.io/tools/imageconverter)
+
+Even so I've had to modify the code to match the Apple logo asset.  This is probably due to version
+mismatches. LVGL in this build is 8.4.0
+
+
+# ---- original readme follows ---
 ![Ubuntu build](https://github.com/OMOTE-Community/OMOTE-Firmware/actions/workflows/build-platformio-ubuntu.yml/badge.svg)
 ![Windows Build](https://github.com/OMOTE-Community/OMOTE-Firmware/actions/workflows/build-platformio-windows.yml/badge.svg)
 ![MacOS Build](https://github.com/OMOTE-Community/OMOTE-Firmware/actions/workflows/build-platformio-macos.yml/badge.svg)
