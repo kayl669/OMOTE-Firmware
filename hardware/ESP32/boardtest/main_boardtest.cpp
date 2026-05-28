@@ -796,7 +796,7 @@ void setup() {
   // setup wifi -----------------------------------------------------------------------------------
   #ifdef ENABLE_WIFI
   // Setup WiFi
-  WiFi.setHostname("OMOTE"); //define hostname
+  WiFi.setHostname(WIFI_HOSTNAME);
   WiFi.onEvent(WiFiEvent);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   WiFi.setSleep(true);
