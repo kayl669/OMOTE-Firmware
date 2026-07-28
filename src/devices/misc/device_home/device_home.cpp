@@ -16,8 +16,8 @@ uint16_t HOME_HOOD_LIGHT;
 //uint16_t HOME_HOOD_TIMER;
 //uint16_t HOME_HOOD_HUMIDITY;
 
-std::vector<std::string> light_list_home = {"switch.eclairage_salon","switch.eclairage_salle","light.eclairage_cuisine"};
-std::vector<std::string> cover_list_home = {"cover.salon","cover.salle_a_manger","cover.cuisine", "cover.store_cuisine"};
+std::vector<std::string> light_list_home = {"switch.eclairage_salon","switch.eclairage_salle","light.eclairage_cuisine_eclairage_cuisine"};
+std::vector<std::string> cover_list_home = {"cover.salon_salon","cover.salle_a_manger_salle_a_manger","cover.cuisine_cuisine", "cover.store_cuisine"};
 
 void register_device_home() {
   #if (ENABLE_WIFI_AND_MQTT == 1)
