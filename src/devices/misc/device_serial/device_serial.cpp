@@ -35,9 +35,18 @@ static void trimString(char* str) {
 }
 
 static void printHelp() {
+    int battery_voltage;
+    int battery_percentage;
+    bool battery_ischarging;
+    get_battery_status(&battery_voltage, &battery_percentage, &battery_ischarging);
+
+    char buffer1[20];
+    snprintf(buffer1, sizeof(buffer1), "Voltage: %.2f V", (float)battery_voltage / 1000);
     printf("\n");
     printf("|-----------------------------------------------|\n");
     printf("|      OMOTE - Serial commands                  |\n");
+    printf("|-----------------------------------------------|\n");
+    printf("| Voltage: %.2f V   | Pourcentage: %02d%%          |\n", (float)battery_voltage / 1000, battery_percentage);
     printf("|-----------------------------------------------|\n");
 #if(OMOTE_HARDWARE_REV >= 5)
     printf("| Backlight keyboard                            |\n");

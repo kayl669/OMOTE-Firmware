@@ -214,7 +214,13 @@ void executeCommandWithData(uint16_t command, commandData commandData, std::stri
       keyboard_ble_executeCommand(command, commandData.commandPayloads, additionalPayload);
       break;
     }
-    #endif
+
+    case BLE_BED: {
+      omote_log_d("execute: will send BLE bed command '%u', payload '%s'\r\n", command, convertStringListToString(commandData.commandPayloads).c_str());
+      bed_ble_executeCommand(command, commandData.commandPayloads);
+      break;
+    }
+#endif
 
     case SCENE: {
       // let the sceneHandler do the scene stuff

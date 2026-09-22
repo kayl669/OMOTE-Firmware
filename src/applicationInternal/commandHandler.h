@@ -6,6 +6,7 @@
 #include <map>
 
 #include "devices/keyboard/device_keyboard_ble/device_keyboard_ble.h"
+#include "devices/bed/okin_ble/device_okin_ble.h"
 
 extern uint16_t COMMAND_UNKNOWN;
 
@@ -101,6 +102,7 @@ enum commandHandlers {
   #endif
   #if (ENABLE_KEYBOARD_BLE == 1)
   BLE_KEYBOARD,
+  BLE_BED,
   #endif
 };
 

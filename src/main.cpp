@@ -14,9 +14,12 @@
 #endif // ENABLE_KEYBOARD_MQTT
 #if (ENABLE_KEYBOARD_BLE == 1)
 #include "devices/keyboard/device_keyboard_ble/device_keyboard_ble.h"
+#include "devices/bed/okin_ble/device_okin_ble.h"
 #endif // ENABLE_KEYBOARD_BLE
 //   TV
 #include "devices/TV/device_samsungTV/device_samsungTV.h"
+//   misc
+#include "devices/misc/device_home/device_home.h"
 // register gui and keys
 #include "applicationInternal/gui/guiBase.h"
 #include "applicationInternal/gui/guiRegistry.h"
@@ -68,12 +71,15 @@ int main(int argc, char *argv[]) {
 
   //   TV
   register_device_samsungTV();
+  //   misc
+  register_device_home();
 
   #if (ENABLE_KEYBOARD_MQTT == 1)
   register_device_keyboard_mqtt();
   #endif
   #if (ENABLE_KEYBOARD_BLE == 1)
   register_device_keyboard_ble();
+  register_device_bed_ble();
   #endif
   register_keyboardCommands();
 
