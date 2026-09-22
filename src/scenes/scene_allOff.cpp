@@ -5,7 +5,6 @@
 #include "applicationInternal/hardware/hardwarePresenter.h"
 // devices
 #include "devices/TV/device_samsungTV/device_samsungTV.h"
-#include "devices/AVreceiver/device_yamahaAmp/device_yamahaAmp.h"
 #include "applicationInternal/commandHandler.h"
 
 uint16_t SCENE_ALLOFF      ; //"Scene_allOff"
@@ -52,23 +51,6 @@ void scene_setKeys_allOff() {
 void scene_start_sequence_allOff(void) {
   executeCommand(SAMSUNG_POWER_OFF);
   delay(500);
-  executeCommand(YAMAHA_POWER_OFF);
-  delay(500);
-  // repeat IR to be sure
-  executeCommand(SAMSUNG_POWER_OFF);
-  delay(500);
-  executeCommand(YAMAHA_POWER_OFF);
-  delay(500);
-  // repeat IR to be sure
-  executeCommand(SAMSUNG_POWER_OFF);
-  delay(500);
-  executeCommand(YAMAHA_POWER_OFF);
-  delay(500);
-  // you cannot power off FireTV, but at least you can stop the currently running app
-  executeCommand(KEYBOARD_HOME);
-  delay(500);
-  executeCommand(KEYBOARD_HOME);
-
 }
 
 void scene_end_sequence_allOff(void) {

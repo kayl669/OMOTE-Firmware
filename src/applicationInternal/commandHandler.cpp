@@ -7,7 +7,6 @@
 #include "applicationInternal/scenes/sceneHandler.h"
 #include "applicationInternal/hardware/hardwarePresenter.h"
 #include "applicationInternal/omote_log.h"
-#include "devices/misc/device_specialCommands.h"
 // show received IR codes and BLE messages in the telnet session
 #include "devices/misc/device_serial/device_serial.h"
 
@@ -245,11 +244,6 @@ void executeCommandWithData(uint16_t command, commandData commandData, std::stri
     }
     
     case SPECIAL: {
-      if (command == MY_SPECIAL_COMMAND) {
-        // do your special command here
-        omote_log_d("execute: could execute a special command here, if you define one\r\n");
-
-      }
       break;
     }
   }

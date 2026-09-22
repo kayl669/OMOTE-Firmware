@@ -20,8 +20,5 @@ jobs:
       - name: Install PlatformIO Core
         run: pip install --upgrade platformio
 
-      - name: Build PlatformIO env:esp32-Rev1toRev4
-        run: pio run -e esp32-Rev1toRev4
-
-      - name: Build PlatformIO env:esp32-s3-Rev5andHigher
-        run: pio run -e esp32-s3-Rev5andHigher
+      - name: Build PlatformIO env:esp32-s3-Rev5
+        run: pio run -e esp32-s3-Rev5

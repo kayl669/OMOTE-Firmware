@@ -1,10 +1,10 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
 #include <list>
 #include <map>
 
-#include "devices/keyboard/device_keyboard_mqtt/device_keyboard_mqtt.h"
 #include "devices/keyboard/device_keyboard_ble/device_keyboard_ble.h"
 
 extern uint16_t COMMAND_UNKNOWN;

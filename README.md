@@ -50,7 +50,7 @@ No other source files need touching; all OTA code is `#if (ENABLE_OTA == 1)` gat
 
 This branch is for a remote without a screen: there is no LVGL, no touch and no simulator. The remote is used with its keys only.
 
-- The off key activates the scene "Off".
+- A short press on the off key toggles the TV. A long press activates the scene "Off".
 - Settings and BLE pairing are done with commands on the serial port (115200 baud). Type `help` to get the list.
 - `ir on` turns on the IR receiver, which prints the codes of other remotes on the serial port.
 - When the remote is picked up and wakes from sleep with a battery below 10%, the keyboard backlight blinks for 5 seconds. This needs "lift to wake" to be enabled (`bl lift 1`).
