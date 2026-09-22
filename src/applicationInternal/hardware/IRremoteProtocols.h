@@ -436,3 +436,4 @@ const uint16_t kYorkBits = 136;
 const uint16_t kYorkStateLength = 17;
 
 std::string concatenateIRsendParams(std::string data, uint16_t nbits, uint16_t repeat);
+std::string concatenateIRsendRawParams(std::string data, uint16_t nbits, uint16_t hz);
