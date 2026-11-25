@@ -47,6 +47,14 @@ void guis_doTabCreationAfterSliding(int newTabID);
 
 // Helper Functions -----------------------------------------------------------------------------------------------------------------------
 
+void setButtonColor(lv_obj_t* button, uint32_t color) {
+  lv_color_t base = lv_color_hex(color);
+  lv_obj_set_style_bg_color(button, base, LV_PART_MAIN);
+  lv_obj_set_style_bg_grad_color(button, lv_color_darken(base, LV_OPA_40), LV_PART_MAIN);
+  lv_obj_set_style_bg_grad_dir(button, LV_GRAD_DIR_VER, LV_PART_MAIN);
+  lv_obj_set_style_text_color(button, lv_color_white(), LV_PART_MAIN);
+}
+
 // callback when pageIndicator prev or next was clicked
 void pageIndicator_navigate_event_cb(lv_event_t* e) {
   lv_obj_t* target = lv_event_get_target(e);

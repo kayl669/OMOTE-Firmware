@@ -18,6 +18,20 @@ extern int tabviewHeight;
 extern int panelHeight;
 // used by almost all gui_*.cpp
 extern lv_color_t color_primary;
+// button colors, dark enough to keep a white label readable
+constexpr uint32_t BUTTON_RED    = 0xD32F2F;
+constexpr uint32_t BUTTON_ORANGE = 0xE65100;
+constexpr uint32_t BUTTON_AMBER  = 0xB7791F;
+constexpr uint32_t BUTTON_GREEN  = 0x2E7D32;
+constexpr uint32_t BUTTON_TEAL   = 0x00897B;
+constexpr uint32_t BUTTON_CYAN   = 0x0088A3;
+constexpr uint32_t BUTTON_BLUE   = 0x1976D2;
+constexpr uint32_t BUTTON_INDIGO = 0x3949AB;
+constexpr uint32_t BUTTON_PURPLE = 0x7B1FA2;
+constexpr uint32_t BUTTON_PINK   = 0xC2185B;
+constexpr uint32_t BUTTON_SLATE  = 0x546E7A;
+// apply a color with a vertical gradient to a button
+void setButtonColor(lv_obj_t* button, uint32_t color);
 
 //#define drawRedBorderAroundMainWidgets
 #ifdef drawRedBorderAroundMainWidgets

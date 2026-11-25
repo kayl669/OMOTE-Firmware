@@ -173,14 +173,14 @@ static void BLEpairing_dropdown_cb(lv_event_t* e) {
   }
 }
 
-void create_button(lv_obj_t* tab, lv_coord_t width, lv_coord_t height, lv_coord_t x_ofs, lv_coord_t y_ofs, std::string text, uint8_t user_data) {
+void create_button(lv_obj_t* tab, lv_coord_t width, lv_coord_t height, lv_coord_t x_ofs, lv_coord_t y_ofs, std::string text, uint8_t user_data, uint32_t color) {
   lv_obj_t* obj;
   lv_obj_t* buttonLabel;
 
   obj = lv_btn_create(tab);
   lv_obj_align(obj, LV_ALIGN_TOP_LEFT, x_ofs, y_ofs);
   lv_obj_set_size(obj, width, height);
-  lv_obj_set_style_bg_color(obj, color_primary, LV_PART_MAIN);
+  setButtonColor(obj, color);
   lv_obj_set_style_radius(obj, 14, LV_PART_MAIN);
   lv_obj_set_style_shadow_color(obj, lv_color_hex(0x404040), LV_PART_MAIN);
   lv_obj_add_flag(obj, LV_OBJ_FLAG_EVENT_BUBBLE);        // Clicking a button causes an event in its container
@@ -219,16 +219,17 @@ void create_textarea(lv_obj_t* tab, lv_coord_t width, lv_coord_t height, lv_coor
 }
 
 void create_tab_content_blepairing(lv_obj_t* tab) {
-  create_button       (tab, 100,  24,   0,   0, "start advert.",  0);
-  create_button       (tab, 100,  24, 112,   0, "stop advert.",   1);
-  
+  // one color for all buttons, red for the ones asking for a confirmation
+  create_button       (tab, 100,  24,   0,   0, "start advert.",  0, BUTTON_BLUE);
+  create_button       (tab, 100,  24, 112,   0, "stop advert.",   1, BUTTON_BLUE);
+
   create_dropdownPeers(tab, 212,  24,   0,  30,                   2);
 
-  create_button       (tab, 100,  24,   0,  60, "print connected", 3);
-  create_button       (tab, 100,  24, 112,  60, "disconnect",     4);
+  create_button       (tab, 100,  24,   0,  60, "print connected", 3, BUTTON_BLUE);
+  create_button       (tab, 100,  24, 112,  60, "disconnect",     4, BUTTON_RED);
 
-  create_button       (tab, 100,  24,   0,  90, "print bonds",    5);
-  create_button       (tab, 100,  24, 112,  90, "delete bonds",   6);
+  create_button       (tab, 100,  24,   0,  90, "print bonds",    5, BUTTON_BLUE);
+  create_button       (tab, 100,  24, 112,  90, "delete bonds",   6, BUTTON_RED);
 
   create_textarea     (tab, 212, 124,   0, 120                     );
 

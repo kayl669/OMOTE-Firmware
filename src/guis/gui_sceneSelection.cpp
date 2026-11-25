@@ -6,6 +6,10 @@
 #include "applicationInternal/commandHandler.h"
 #include "applicationInternal/omote_log.h"
 #include "guis/gui_sceneSelection.h"
+#include "scenes/scene_allOff.h"
+
+// colors are used in turn, red is reserved for the "all off" scene
+static const uint32_t scene_colors[] = {BUTTON_BLUE, BUTTON_PURPLE, BUTTON_TEAL, BUTTON_ORANGE, BUTTON_GREEN, BUTTON_PINK};
 
 static uint16_t activate_scene_command;
 static bool doForceScene;
@@ -106,7 +110,10 @@ void create_tab_content_sceneSelection(lv_obj_t* tab) {
       lv_obj_t* button = lv_btn_create(tab);
       lv_obj_set_size(button, lv_pct(100), 42);
       lv_obj_set_style_radius(button, 30, LV_PART_MAIN);
-      lv_obj_set_style_bg_color(button, color_primary, LV_PART_MAIN);
+      uint32_t color = scenes->at(i) == scene_name_allOff
+        ? BUTTON_RED
+        : scene_colors[i % (sizeof(scene_colors) / sizeof(scene_colors[0]))];
+      setButtonColor(button, color);
       lv_obj_add_event_cb(button, sceneSelection_event_cb, LV_EVENT_CLICKED,       (void *)(intptr_t)i);
       lv_obj_add_event_cb(button, sceneSelection_event_cb, LV_EVENT_SHORT_CLICKED, (void *)(intptr_t)i);
       //lv_obj_add_event_cb(button, sceneSelection_event_cb, LV_EVENT_PRESSED,       (void *)(intptr_t)i);
