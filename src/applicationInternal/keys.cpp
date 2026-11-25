@@ -1,5 +1,4 @@
 #include <string>
-#include "applicationInternal/gui/guiMemoryOptimizer.h"
 #include "applicationInternal/hardware/hardwarePresenter.h"
 #include "applicationInternal/scenes/sceneRegistry.h"
 #include "applicationInternal/commandHandler.h"
@@ -70,7 +69,7 @@ void doShortPress(char keyChar, int keyCode){
   
   lastTimeSent[row][col] = currentMillis;
 
-  uint16_t command = get_command_short(gui_memoryOptimizer_getActiveSceneName(), keyChar);
+  uint16_t command = get_command_short(get_activeScene(), keyChar);
   if (command == COMMAND_UNKNOWN) {
     omote_log_w("key: key '%c', but no command defined\r\n", keyChar);
     return;
@@ -81,7 +80,7 @@ void doShortPress(char keyChar, int keyCode){
 }
 
 void doLongPress(char keyChar, int keyCode){
-  uint16_t command = get_command_long(gui_memoryOptimizer_getActiveSceneName(), keyChar);
+  uint16_t command = get_command_long(get_activeScene(), keyChar);
   if (command != COMMAND_UNKNOWN) {
     omote_log_d("key: key '%c' (long press), will use command '%u'\r\n", keyChar, command);
     executeCommand(command);
@@ -142,11 +141,11 @@ void keypad_processKeyStates() {
       if (singleKeyState == PRESSED) {
         omote_log_v("pressed\r\n");
 
-        if ((get_key_repeatMode(gui_memoryOptimizer_getActiveSceneName(), keyChar) == SHORT) && (keyStateProcessed[row][col].keyState != PRESSED)) {
+        if ((get_key_repeatMode(get_activeScene(), keyChar) == SHORT) && (keyStateProcessed[row][col].keyState != PRESSED)) {
           omote_log_v("key: PRESSED of SHORT key %c (%d)\r\n", keyChar, keyCode);
           doShortPress(keyChar, keyCode);
 
-        } else if ((get_key_repeatMode(gui_memoryOptimizer_getActiveSceneName(), keyChar) == SHORT_REPEATED) && (keyStateProcessed[row][col].keyState != PRESSED)) { // here do not repeat it too early, do the repeat only in HOLD
+        } else if ((get_key_repeatMode(get_activeScene(), keyChar) == SHORT_REPEATED) && (keyStateProcessed[row][col].keyState != PRESSED)) { // here do not repeat it too early, do the repeat only in HOLD
           omote_log_v("key: PRESSED of SHORT_REPEATED key %c (%d)\r\n", keyChar, keyCode);
           doShortPress(keyChar, keyCode);
 
@@ -156,13 +155,13 @@ void keypad_processKeyStates() {
       } else if (singleKeyState == HOLD) {
         omote_log_v("hold\r\n");
 
-        if ((get_key_repeatMode(gui_memoryOptimizer_getActiveSceneName(), keyChar) == SHORTorLONG) && (keyStateProcessed[row][col].keyState != HOLD)) {
+        if ((get_key_repeatMode(get_activeScene(), keyChar) == SHORTorLONG) && (keyStateProcessed[row][col].keyState != HOLD)) {
           omote_log_v("key: HOLD of SHORTorLONG key %c (%d)\r\n", keyChar, keyCode);
           omote_log_v("will set keyIsHold to TRUE for keycode %d\r\n", keyCode);
           keyStateProcessed[row][col].keyIsHold = true;
           doLongPress(keyChar, keyCode);
 
-        } else if (get_key_repeatMode(gui_memoryOptimizer_getActiveSceneName(), keyChar) == SHORT_REPEATED) { // this is the only case where we do not check the keyStateProcessed, because here it is intended to repeat the action
+        } else if (get_key_repeatMode(get_activeScene(), keyChar) == SHORT_REPEATED) { // this is the only case where we do not check the keyStateProcessed, because here it is intended to repeat the action
           omote_log_v("key: HOLD of SHORT_REPEATED key %c (%d)\r\n", keyChar, keyCode);
           doShortPress(keyChar, keyCode);
 
@@ -171,7 +170,7 @@ void keypad_processKeyStates() {
 
       } else if (singleKeyState == RELEASED) {
         omote_log_v("released\r\n");
-        if ((get_key_repeatMode(gui_memoryOptimizer_getActiveSceneName(), keyChar) == SHORTorLONG) && !keyStateProcessed[row][col].keyIsHold && (keyStateProcessed[row][col].keyState != RELEASED)) {
+        if ((get_key_repeatMode(get_activeScene(), keyChar) == SHORTorLONG) && !keyStateProcessed[row][col].keyIsHold && (keyStateProcessed[row][col].keyState != RELEASED)) {
           omote_log_v("value of keyIsHold for keycode %d is %d\r\n", keyCode, keyStateProcessed[row][col].keyIsHold);
           omote_log_v("key: RELEASED of SHORTorLONG key %c (%d)\r\n", keyChar, keyCode);
           doShortPress(keyChar, keyCode);

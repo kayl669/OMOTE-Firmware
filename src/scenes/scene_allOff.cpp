@@ -88,7 +88,5 @@ void register_scene_allOff(void) {
     & scene_end_sequence_allOff,
     & key_repeatModes_allOff,
     & key_commands_short_allOff,
-    & key_commands_long_allOff,
-    NULL,
-    SCENE_ALLOFF);
+    & key_commands_long_allOff);
 }

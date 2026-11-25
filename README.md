@@ -46,13 +46,18 @@ If `OMOTE` doesn't resolve, replace `upload_port` in `platformio.ini` (or the UR
 
 No other source files need touching; all OTA code is `#if (ENABLE_OTA == 1)` gated in `hardware/ESP32/ota_hal_esp32.cpp`.
 
-## Battery state on the keyboard backlight
+## Remote without display
 
-Only for hardware rev 5 and higher.
+This branch is for a remote without a screen: there is no LVGL, no touch and no simulator. The remote is used with its keys only.
 
-- When the remote is picked up and wakes from sleep with a battery below 10%, the keyboard backlight blinks for 5 seconds. This needs "lift to wake" to be enabled.
-- While charging with a battery below 95%, the keyboard backlight does a long blink (2 seconds on at 25% brightness, 2 seconds off) and the remote stays awake, with the screen on. Plugging in the cable does not wake the remote by itself.
-- Both signals are configured with the same commands on the serial port (115200 baud), with `<s>` being `low` or `charge`: `blink <s>` (battery level, 0 = off), `blink <s> time`, `blink <s> speed` and `blink <s> light`. `blink reset` restores the defaults.
+- The off key activates the scene "Off".
+- Settings and BLE pairing are done with commands on the serial port (115200 baud). Type `help` to get the list.
+- `ir on` turns on the IR receiver, which prints the codes of other remotes on the serial port.
+- When the remote is picked up and wakes from sleep with a battery below 10%, the keyboard backlight blinks for 5 seconds. This needs "lift to wake" to be enabled (`bl lift 1`).
+- While charging with a battery below 95%, the keyboard backlight does a long blink (2 seconds on at 25% brightness, 2 seconds off) and the remote stays awake. Plugging in the cable does not wake the remote by itself: move it or press a key.
+- Both battery signals are configured with the same serial commands, with `<s>` being `low` or `charge`: `blink <s>` (battery level), `blink <s> time`, `blink <s> speed` and `blink <s> light`. The values above are the defaults, `blink reset` restores them.
+
+The remote goes to sleep after the configured timeout. Serial commands and received IR codes count as activity, but they cannot wake it up: press a key or pick up the remote first.
 
 ### Telnet
 
@@ -79,14 +84,6 @@ Activities can be started and single commands can be sent, by telnet as well as 
 
 ---
 
-GUIS - I've used Squareline Studio for some of this stuff, and cherry-picked the output code
-It is a completely manual process, unlike some others I've worked on.
-
-I have backing art on some screens, Squareline Studio generated the code, but the asset files I've used come from the online [image converter](https://lvgl.io/tools/imageconverter)
-
-Even so I've had to modify the code to match the Apple logo asset.  This is probably due to version
-mismatches. LVGL in this build is 8.4.0
-
 
 # ---- original readme follows ---
 ![Ubuntu build](https://github.com/OMOTE-Community/OMOTE-Firmware/actions/workflows/build-platformio-ubuntu.yml/badge.svg)
@@ -98,9 +95,7 @@ mismatches. LVGL in this build is 8.4.0
 
 This is the ESP32 Arduino based firmware for the OMOTE - Open Universal Remote.
 
-To run this firmware, you have two options
-*  run it on the [OMOTE ESP32 Hardware](https://github.com/OMOTE-Community/OMOTE-Hardware/)
-*  run it in the simulator on Linux, macOs or Windows
+This firmware runs on the [OMOTE ESP32 Hardware](https://github.com/OMOTE-Community/OMOTE-Hardware/).
 
 ### The state of this project
 
@@ -117,17 +112,6 @@ You need to have PlatformIO running, and you need to know how to compile and fla
 The remote can be charged and programmed via its USB-C port. Open the PlatformIO project to compile and upload the code to the ESP32.
 
 As a long term goal, maybe a prebuilt firmware will be published, where you can configure your OMOTE via a web interface.
-
-### LVGL GUI simulator for Windows, Linux, and macOS
-
-A simulator for running the LVGL UI on your local Windows, Linux, or macOS machine is available.
-
-You can run the simulator in Visual Studio Code with PlatformIO. No need for any other compiler or development environment (no Visual Studio needed as often done in other LVGL simulators).
-<div align="center">
-  <img src="images/WindowsSimulator.gif" width="60%">
-</div>
-
-For details, please see the [wiki for the software simulator for fast creating and testing of LVGL GUIs.](https://github.com/OMOTE-Community/OMOTE-Firmware/wiki/Software-simulator-for-fast-creating-and-testing-of-LVGL-GUIs)
 
 ### To-dos for software
 

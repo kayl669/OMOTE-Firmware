@@ -1,14 +1,10 @@
 #include <string>
 #include <list>
 #include "applicationInternal/hardware/hardwarePresenter.h"
-// for registering the callback to show received IR messages
-#include "guis/gui_irReceiver.h"
-// for registering the callback to receive MQTT messages
-#include "../commandHandler.h"
-// for registering the callback to show WiFi status
-#include "applicationInternal/gui/guiBase.h"
+// for registering the callbacks called by the hardware
+#include "applicationInternal/commandHandler.h"
 
-// This include of "hardwareLayer.h" is the one and only link to folder "hardware". The file "hardwareLayer.h" does the differentiation between ESP32 and Windows/Linux.
+// This include of "hardwareLayer.h" is the one and only link to folder "hardware". The file "hardwareLayer.h" includes the ESP32 hardware headers.
 // "hardwareLayer.h" includes all the other hardware header files as well. So everything from all hardware header files is available here - and only here.
 // This include has to be here in "hardwarePresenter.cpp" and not in "hardwarePresenter.h". Otherwise the whole rest of the code would have access to the hardware too.
 // The rest of the code is only allowed to use "hardwarePresenter.h".
@@ -17,6 +13,9 @@
 // --- hardware general -------------------------------------------------------
 void init_hardware_general(void) {
   init_hardware_general_HAL();
+}
+void init_i2cBus(void) {
+  init_i2cBus_HAL();
 }
 
 // --- preferences ------------------------------------------------------------
@@ -31,24 +30,6 @@ std::string get_activeScene() {
 }
 void set_activeScene(std::string anActiveScene) {
   set_activeScene_HAL(anActiveScene);
-}
-std::string get_activeGUIname() {
-  return get_activeGUIname_HAL();
-}
-void set_activeGUIname(std::string anActiveGUIname) {
-  set_activeGUIname_HAL(anActiveGUIname);
-}
-int get_activeGUIlist() {
-  return get_activeGUIlist_HAL();
-}
-void set_activeGUIlist(int anActiveGUIlist) {
-  set_activeGUIlist_HAL(anActiveGUIlist);
-}
-int get_lastActiveGUIlistIndex() {
-  return get_lastActiveGUIlistIndex_HAL();
-}
-void set_lastActiveGUIlistIndex(int aGUIlistIndex) {
-  set_lastActiveGUIlistIndex_HAL(aGUIlistIndex);
 }
 BacklightSignalSettings get_backlightSignalSettings() {
   return get_backlightSignalSettings_HAL();
@@ -254,22 +235,6 @@ void consumerControlBLE_longpress(const MediaKeyReport value) {
 }
 #endif
 
-// --- tft --------------------------------------------------------------------
-void update_backlightBrightness(void) {
-  update_backlightBrightness_HAL();
-}
-uint8_t get_backlightBrightness() {
-  return get_backlightBrightness_HAL();
-}
-void set_backlightBrightness(uint8_t aBacklightBrightness){
-  set_backlightBrightness_HAL(aBacklightBrightness);
-}
-
-// --- lvgl -------------------------------------------------------------------
-void init_lvgl_hardware() {
-  init_lvgl_HAL();
-};
-
 // --- WiFi / MQTT ------------------------------------------------------------
 #if (ENABLE_WIFI_AND_MQTT == 1)
 void init_mqtt(void) {
@@ -318,15 +283,9 @@ void telnet_close(void) {
 // --- OTA --------------------------------------------------------------------
 #if (ENABLE_OTA == 1)
 void
-set_ota_start_cb(tOtaStartCallback cb) {
-    set_ota_start_cb_HAL(cb);
-}
-void
-set_ota_progress_cb(tOtaProgressCallback cb) {
-    set_ota_progress_cb_HAL(cb);
-}
-void
 init_ota(void) {
+    set_ota_start_cb_HAL(&otaStart_cb);
+    set_ota_progress_cb_HAL(&otaProgress_cb);
     init_ota_HAL();
 }
 void

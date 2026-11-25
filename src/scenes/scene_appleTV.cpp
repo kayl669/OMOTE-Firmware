@@ -7,8 +7,6 @@
 #include "devices/TV/device_samsungTV/device_samsungTV.h"
 #include "devices/AVreceiver/device_yamahaAmp/device_yamahaAmp.h"
 #include "applicationInternal/commandHandler.h"
-// guis
-#include "devices/mediaPlayer/device_appleTV/gui_appleTV.h"
 
 uint16_t SCENE_APPLETV      ; //"Scene_appleTV"
 uint16_t SCENE_APPLETV_FORCE; //"Scene_appleTV_force"
@@ -67,7 +65,6 @@ void scene_end_sequence_appleTV(void) {
 }
 
 std::string scene_name_appleTV = "Apple TV";
-t_gui_list scene_appleTV_gui_list = {tabName_appleTV};
 
 void register_scene_appleTV(void) {
   register_command(&SCENE_APPLETV,       makeCommandData(SCENE, {scene_name_appleTV}));
@@ -80,7 +77,5 @@ void register_scene_appleTV(void) {
     & scene_end_sequence_appleTV,
     & key_repeatModes_appleTV,
     & key_commands_short_appleTV,
-    & key_commands_long_appleTV,
-    & scene_appleTV_gui_list,
-    SCENE_APPLETV);
+    & key_commands_long_appleTV);
 }

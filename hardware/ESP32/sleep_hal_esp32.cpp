@@ -6,9 +6,8 @@
 #include "preferencesStorage_hal_esp32.h"
 // turn off power of IR receiver
 #include "infrared_receiver_hal_esp32.h"
-// turn off tft
-#include "displaydriver.h"
-#include "tft_hal_esp32.h"
+// turn off peripheral power
+#include "hardware_general_hal_esp32.h"
 // turn off SD card
 #include "sd_card_hal_esp32.h"
 // disconnect WiFi
@@ -40,7 +39,7 @@ LIS3DH IMU(I2C_MODE, 0x19);
 Wakeup_reasons wakeup_reason;
 
 void setLastActivityTimestamp_HAL() {
-  // There was motion, touchpad or key hit.
+  // There was motion or a key hit.
   // Set the time where this happens.
   lastActivityTimestamp = millis();
 }
@@ -157,24 +156,7 @@ void enterSleep(){
   #endif
 
   // Prepare IO states
-  digitalWrite(LCD_DC_GPIO, LOW); // LCD control signals off
-  digitalWrite(LCD_CS_GPIO, LOW);
-  #if(OMOTE_HARDWARE_REV >= 5)
-    digitalWrite(LCD_WR_GPIO, LOW);
-    digitalWrite(LCD_RD_GPIO, LOW);
-    digitalWrite(LCD_D0_GPIO, LOW);
-    digitalWrite(LCD_D1_GPIO, LOW);
-    digitalWrite(LCD_D2_GPIO, LOW);
-    digitalWrite(LCD_D3_GPIO, LOW);
-    digitalWrite(LCD_D4_GPIO, LOW);
-    digitalWrite(LCD_D5_GPIO, LOW);
-    digitalWrite(LCD_D6_GPIO, LOW);
-    digitalWrite(LCD_D7_GPIO, LOW);
-  #else
-    digitalWrite(LCD_MOSI_GPIO, LOW);
-    digitalWrite(LCD_SCK_GPIO, LOW);
-  #endif
-  digitalWrite(LCD_EN_GPIO, HIGH); // LCD logic off
+  digitalWrite(LCD_EN_GPIO, HIGH); // peripheral power off
   digitalWrite(LCD_BL_GPIO, HIGH); // LCD backlight off
   #if(OMOTE_HARDWARE_REV >= 5)
   digitalWrite(SD_EN_GPIO, HIGH); // SD card off
@@ -201,8 +183,7 @@ void enterSleep(){
   gpio_hold_en((gpio_num_t)SW_4_GPIO);
   gpio_hold_en((gpio_num_t)SW_5_GPIO);
   #endif
-  // Force display pins to high impedance
-  // Without this the display might not wake up from sleep
+  // Force the pins to high impedance and hold them during sleep
   pinMode(LCD_BL_GPIO, INPUT);
   pinMode(LCD_EN_GPIO, INPUT);
   gpio_hold_en((gpio_num_t)LCD_BL_GPIO);
@@ -297,9 +278,6 @@ bool get_wakeupByIMUEnabled_HAL() {
 }
 void set_wakeupByIMUEnabled_HAL(bool aWakeupByIMUEnabled) {
   wakeupByIMUEnabled = aWakeupByIMUEnabled;
-}
-uint32_t get_lastActivityTimestamp() {
-  return lastActivityTimestamp;
 }
 uint8_t get_motionThreshold_HAL() {
   return motionThreshold;

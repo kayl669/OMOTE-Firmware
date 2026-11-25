@@ -77,7 +77,5 @@ void register_scene_chromecast(void) {
     & scene_end_sequence_chromecast,
     & key_repeatModes_chromecast,
     & key_commands_short_chromecast,
-    & key_commands_long_chromecast,
-    NULL,
-    SCENE_CHROMECAST);
+    & key_commands_long_chromecast);
 }

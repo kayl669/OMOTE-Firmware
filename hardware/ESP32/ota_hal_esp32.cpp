@@ -107,8 +107,6 @@ static void handleUpdateUpload() {
         }
         ota_written += upload.currentSize;
         // Only fire the progress callback when the integer percent advances.
-        // The callback redraws LVGL, which stalls TCP — once per percent is
-        // smooth enough and keeps the upload from crawling.
         if (s_progress_cb && ota_total > 0) {
             int pct = (int)((ota_written * 100) / ota_total);
             if (pct > 99) { pct = 99; } // reserve 100% for after Update.end()

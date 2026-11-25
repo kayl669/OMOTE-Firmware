@@ -1,4 +1,4 @@
-// OMOTE firmware for ESP32
+// OMOTE firmware for ESP32, remote without display
 // 2023-2025 Maximilian Kern, Klaus Musch
 
 #include "applicationInternal/omote_log.h"
@@ -33,23 +33,9 @@
 //   misc
 #include "devices/misc/device_smarthome/device_smarthome.h"
 //#include "devices/misc/device_airconditioner/device_airconditioner.h"
-// register gui and keys
-#include "applicationInternal/gui/guiBase.h"
-#include "applicationInternal/gui/guiRegistry.h"
-#include "guis/gui_sceneSelection.h"
-#include "guis/gui_irReceiver.h"
-#include "guis/gui_settings.h"
-#include "guis/gui_numpad.h"
-#include "guis/gui_BLEpairing.h"
-#include "devices/AVreceiver/device_yamahaAmp/gui_yamahaAmp.h"
-#include "devices/mediaPlayer/device_appleTV/gui_appleTV.h"
-#include "devices/misc/device_smarthome/gui_smarthome.h"
-#if (ENABLE_OTA == 1)
-#include "guis/gui_ota.h"
-#endif
-//#include "devices/misc/device_airconditioner/gui_airconditioner.h"
+// keys
 #include "applicationInternal/keys.h"
-#include "applicationInternal/gui/guiStatusUpdate.h"
+#include "applicationInternal/memoryUsage.h"
 // register scenes
 #include "scenes/scene__default.h"
 #include "scenes/scene_allOff.h"
@@ -61,17 +47,7 @@
 // battery state shown with the keyboard backlight
 #include "applicationInternal/backlightSignal.h"
 
-#if defined(ARDUINO)
-// in case of Arduino we have a setup() and a loop()
 void setup() {
-
-#elif defined(WIN32) || defined(__linux__) || defined(__APPLE__)
-// in case of Windows/Linux, we have only a main() function, no setup() and loop(), so we have to simulate them
-// forward declaration of loop()
-void loop(unsigned long *pIMUTaskTimer, unsigned long *pUpdateStatusTimer);
-// main function as usual in C
-int main(int argc, char *argv[]) {
-#endif
 
   // --- Startup ---
   Serial.begin(115200);
@@ -121,28 +97,6 @@ int main(int argc, char *argv[]) {
   #endif
   register_keyboardCommands();
 
-  // Register the GUIs. They will be displayed in the order they have been registered.
-  register_gui_sceneSelection();
-  register_gui_irReceiver();
-  register_gui_settings();
-  register_gui_appleTV();
-  register_gui_numpad();
-  #if (ENABLE_KEYBOARD_BLE == 1)
-  register_gui_blepairing();
-  #endif
-  register_gui_smarthome();
-  //register_gui_airconditioner();
-  register_gui_yamahaAmp();
-  // Only show these GUIs in the main gui list. If you don't set this explicitely, by default all registered guis are shown.
-  #if (USE_SCENE_SPECIFIC_GUI_LIST != 0)
-  main_gui_list =
-    {tabName_yamahaAmp, tabName_sceneSelection, tabName_smarthome, tabName_settings, tabName_irReceiver
-    #if (ENABLE_KEYBOARD_BLE == 1)
-    , tabName_blepairing
-    #endif
-    };
-  #endif
-
   // register the scenes and their key_commands_*
   register_scene_defaultKeys();
   register_scene_TV();
@@ -150,18 +104,14 @@ int main(int argc, char *argv[]) {
   register_scene_chromecast();
   register_scene_appleTV();
   register_scene_allOff();
-  // Only show these scenes on the sceneSelection gui. If you don't set this explicitely, by default all registered scenes are shown.
-  set_scenes_on_sceneSelectionGUI({scene_name_TV, scene_name_fireTV, scene_name_chromecast, scene_name_appleTV});
 
-  // init GUI - will initialize tft, touch and lvgl
-  init_gui(); // This has to come before any other i2c devices are initialized, otherwise the i2c bus will not be powered
-  setLabelActiveScene();
-  gui_loop(); // Run the LVGL UI once before the loop takes over
+  // power the peripherals and start the I2C bus
+  init_i2cBus(); // This has to come before any other i2c devices are initialized, otherwise the i2c bus will not be powered
 
   // Power Pin and battery monitor definition
   init_battery();
 
-  // init BLE keyboard. Has to be after init_gui (because of powered I2C) and after init_battery (because of fuel gauge init)
+  // init BLE keyboard. Has to be after init_i2cBus (because of powered I2C) and after init_battery (because of fuel gauge init)
   #if (ENABLE_KEYBOARD_BLE == 1)
   init_keyboardBLE();
   #endif
@@ -169,21 +119,19 @@ int main(int argc, char *argv[]) {
   // setup keyboard matrix driver
   init_keys();
 
-  // setup the Inertial Measurement Unit (IMU) for motion detection. Has to be after init_gui(), otherwise I2C will not work
+  // setup the Inertial Measurement Unit (IMU) for motion detection. Has to be after init_i2cBus(), otherwise I2C will not work
   init_IMU();
 
-  // init WiFi - needs to be after init_gui() because WifiLabel must be available
+  // init WiFi
   #if (ENABLE_WIFI_AND_MQTT == 1)
   init_mqtt();
   // telnet server for the same commands as on the serial port
   init_telnet();
   #endif
 
-#if (ENABLE_OTA == 1)
-    set_ota_start_cb(ota_gui_start);
-    set_ota_progress_cb(ota_gui_set_progress);
-    init_ota();
-#endif
+  #if (ENABLE_OTA == 1)
+  init_ota();
+  #endif
 
   // has to be at the end of setup, because the blinking is done in loop()
   #if(OMOTE_HARDWARE_REV >= 5)
@@ -192,30 +140,15 @@ int main(int argc, char *argv[]) {
 
   omote_log_i("Setup finished in %lu ms.\r\n", millis());
 
-  #if defined(WIN32) || defined(__linux__) || defined(__APPLE__)
-  // In Windows/Linux there is no loop function that is automatically being called. So we have to do this on our own infinitely here in main()
-  unsigned long IMUTaskTimer = 0;
-  unsigned long updateStatusTimer = 0;
-  while (1)
-    loop(&IMUTaskTimer, &updateStatusTimer);
-  #endif
-
 }
 
 // Loop ------------------------------------------------------------------------------------------------------------------------------------
-#if defined(ARDUINO)
 unsigned long IMUTaskTimer = 0;
 unsigned long updateStatusTimer = 0;
-unsigned long *pIMUTaskTimer = &IMUTaskTimer;
-unsigned long *pUpdateStatusTimer = &updateStatusTimer;
 void loop() {
-#elif defined(WIN32) || defined(__linux__) || defined(__APPLE__)
-void loop(unsigned long *pIMUTaskTimer, unsigned long *pUpdateStatusTimer) {
-#endif
 
   // --- do as often as possible --------------------------------------------------------
-  // update backlight and keyboard brightness. Fade in on startup, dim before going to sleep
-  update_backlightBrightness();
+  // update keyboard brightness. Fade in on startup
   #if(OMOTE_HARDWARE_REV >= 5)
     update_keyboardBrightness();
   #endif
@@ -225,8 +158,6 @@ void loop(unsigned long *pIMUTaskTimer, unsigned long *pUpdateStatusTimer) {
   if (get_irReceiverEnabled()) {
     infraredReceiver_loop();
   }
-  // update LVGL UI
-  gui_loop();
   // call mqtt loop to receive mqtt messages, if you are subscribed to some topics
   #if (ENABLE_WIFI_AND_MQTT == 1)
   mqtt_loop();
@@ -238,23 +169,23 @@ void loop(unsigned long *pIMUTaskTimer, unsigned long *pUpdateStatusTimer) {
 
   // --- every 100 ms -------------------------------------------------------------------
   // Refresh IMU data (motion detection) every 100 ms
-  // If no action (key, TFT or motion), then go to sleep
-  if(millis() - *pIMUTaskTimer >= 100){
-    *pIMUTaskTimer = millis();
+  // If no action (key or motion), then go to sleep
+  if(millis() - IMUTaskTimer >= 100){
+    IMUTaskTimer = millis();
 
     check_activity();
 
   }
 
   // --- every 1000 ms ------------------------------------------------------------------
-  if(millis() - *pUpdateStatusTimer >= 1000) {
-    *pUpdateStatusTimer = millis();
+  if(millis() - updateStatusTimer >= 1000) {
+    updateStatusTimer = millis();
 
-    // update user_led, battery, BLE, memoryUsage on GUI
-    updateHardwareStatusAndShowOnGUI();
+    update_userled();
     #if(OMOTE_HARDWARE_REV >= 5)
     showChargingState();
     #endif
+    doLogMemoryUsage();
   }
 
   handleSerialInput();

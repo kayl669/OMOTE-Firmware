@@ -9,9 +9,6 @@ extern int DEFAULT_SLEEP_TIMEOUT;
 enum Wakeup_reasons{WAKEUP_BY_RESET, WAKEUP_BY_IMU, WAKEUP_BY_KEYPAD};
 extern Wakeup_reasons wakeup_reason;
 
-// only called by tft.cpp, needs to know this because tft gets dimmed 2000 ms before going to sleep
-uint32_t get_lastActivityTimestamp();
-
 // called from the HAL
 void init_sleep_HAL();
 void init_IMU_HAL();

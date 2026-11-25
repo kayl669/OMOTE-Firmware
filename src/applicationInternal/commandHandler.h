@@ -11,14 +11,14 @@ extern uint16_t COMMAND_UNKNOWN;
 
 /*
   Depending on which keyboard is enabled (BLE or MQTT), we define KEYBOARD_UP, KEYBOARD_DOWN and so on.
-  These defines are used in keys.cpp, gui*.cpp and commandHandler.cpp
+  These defines are used in keys.cpp and commandHandler.cpp
   Example:
   If BLE  is enabled, then KEYBOARD_UP will be the same as KEYBOARD_BLE_UP
   If MQTT is enabled, then KEYBOARD_UP will be the same as KEYBOARD_MQTT_UP
   If none of them is enabled, then KEYBOARD_UP will be the same as KEYBOARD_UP_DUMMY
-  Doing so you can switch between the keyboards without changing the UI code (keys.cpp, gui*.cpp and commandHandler.cpp)
+  Doing so you can switch between the keyboards without changing the code using them (keys.cpp and commandHandler.cpp)
   If you need something different than this behaviour, then you can change the code in 'register_keyboardCommands()'
-  or you can of course change keys.cpp, gui*.cpp and commandHandler.cpp so that they directly use KEYBOARD_BLE_UP or KEYBOARD_MQTT_UP etc.
+  or you can of course change keys.cpp and commandHandler.cpp so that they directly use KEYBOARD_BLE_UP or KEYBOARD_MQTT_UP etc.
 */
 
 extern uint16_t KEYBOARD_DUMMY_UP;
@@ -47,7 +47,7 @@ extern uint16_t KEYBOARD_DUMMY_VOLUME_DECREMENT;
   #define KEYBOARD_PREFIX KEYBOARD_MQTT_
 #else
   // Of course keyboard commands will not work if neither BLE nor MQTT keyboard is enabled, but at least code will compile.
-  // But you have to change keys.cpp, gui_numpad.cpp and commandHandler.cpp where keyboard commands are used so that a command can be executed successfully.
+  // But you have to change keys.cpp and commandHandler.cpp where keyboard commands are used so that a command can be executed successfully.
   // Search for "executeCommand(Key" to find them.
   #define KEYBOARD_PREFIX KEYBOARD_DUMMY_
 #endif
@@ -94,7 +94,6 @@ extern uint16_t KEYBOARD_VOLUME_DECREMENT;
 enum commandHandlers {
   SPECIAL,
   SCENE,
-  GUI,
   IR,
   #if (ENABLE_WIFI_AND_MQTT == 1)
   MQTT,
@@ -134,4 +133,9 @@ void receiveBLEmessage_cb(std::string message);
 // used as callbacks from hardware
 void receiveWiFiConnected_cb(bool connected);
 void receiveMQTTmessage_cb(std::string topic, std::string payload);
+#endif
+#if (ENABLE_OTA == 1)
+// used as callbacks from hardware
+void otaStart_cb(void);
+void otaProgress_cb(int pct); // 0-100, or -1 for error
 #endif

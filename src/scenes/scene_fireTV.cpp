@@ -7,8 +7,6 @@
 #include "devices/TV/device_samsungTV/device_samsungTV.h"
 #include "devices/AVreceiver/device_yamahaAmp/device_yamahaAmp.h"
 #include "applicationInternal/commandHandler.h"
-// guis
-#include "guis/gui_numpad.h"
 
 uint16_t SCENE_FIRETV      ; //"Scene_firetv"
 uint16_t SCENE_FIRETV_FORCE; //"Scene_firetv_force"
@@ -76,7 +74,6 @@ void scene_end_sequence_fireTV(void) {
 }
 
 std::string scene_name_fireTV = "Fire TV";
-t_gui_list scene_fireTV_gui_list = {tabName_numpad};
 
 void register_scene_fireTV(void) {
   register_command(&SCENE_FIRETV,       makeCommandData(SCENE, {scene_name_fireTV}));
@@ -89,7 +86,5 @@ void register_scene_fireTV(void) {
     & scene_end_sequence_fireTV,
     & key_repeatModes_fireTV,
     & key_commands_short_fireTV,
-    & key_commands_long_fireTV,
-    & scene_fireTV_gui_list,
-    SCENE_FIRETV);
+    & key_commands_long_fireTV);
 }

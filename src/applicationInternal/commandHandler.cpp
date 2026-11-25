@@ -8,12 +8,6 @@
 #include "applicationInternal/hardware/hardwarePresenter.h"
 #include "applicationInternal/omote_log.h"
 #include "devices/misc/device_specialCommands.h"
-// show WiFi status
-#include "applicationInternal/gui/guiBase.h"
-// show received IR and MQTT messages
-#include "guis/gui_irReceiver.h"
-// show received BLE connection messages
-#include "guis/gui_BLEpairing.h"
 // show received IR codes and BLE messages in the telnet session
 #include "devices/misc/device_serial/device_serial.h"
 
@@ -163,7 +157,7 @@ void register_keyboardCommands() {
   KEYBOARD_VOLUME_DECREMENT    = KEYBOARD_MQTT_VOLUME_DECREMENT;
 #else
   // Of course keyboard commands will not work if neither BLE nor MQTT keyboard is enabled, but at least code will compile.
-  // But you have to change keys.cpp, gui_numpad.cpp and commandHandler.cpp where keyboard commands are used so that a command can be executed successfully.
+  // But you have to change keys.cpp and commandHandler.cpp where keyboard commands are used so that a command can be executed successfully.
   // Search for "executeCommand(Key" to find them.
   KEYBOARD_UP                  = KEYBOARD_DUMMY_UP;
   KEYBOARD_DOWN                = KEYBOARD_DUMMY_DOWN;
@@ -250,13 +244,6 @@ void executeCommandWithData(uint16_t command, commandData commandData, std::stri
       break;
     }
     
-    case GUI: {
-      // let the sceneHandler find and show the gui
-      omote_log_d("execute: will send gui command to the sceneHandler\r\n");
-      handleGUI(command, commandData, additionalPayload);
-      break;
-    }
-    
     case SPECIAL: {
       if (command == MY_SPECIAL_COMMAND) {
         // do your special command here
@@ -285,7 +272,7 @@ void executeCommand(uint16_t command, std::string additionalPayload) {
 void receiveNewIRmessage_cb(std::string message) {
   // keep device awake while IR codes are being decoded
   setLastActivityTimestamp();
-  showNewIRmessage(message);
+  omote_log_i("IR received: %s\r\n", message.c_str());
   #if (ENABLE_WIFI_AND_MQTT == 1)
   showOnTelnet("IR received: " + message);
   #endif
@@ -294,7 +281,7 @@ void receiveNewIRmessage_cb(std::string message) {
 #if (ENABLE_KEYBOARD_BLE == 1)
 // used as callback from hardware
 void receiveBLEmessage_cb(std::string message) {
-  addBLEmessage(message);
+  omote_log_i("BLE: %s\r\n", message.c_str());
   #if (ENABLE_WIFI_AND_MQTT == 1)
   showOnTelnet("BLE: " + message);
   #endif
@@ -303,13 +290,9 @@ void receiveBLEmessage_cb(std::string message) {
 #endif
 #if (ENABLE_WIFI_AND_MQTT == 1)
 void receiveWiFiConnected_cb(bool connected) {
-  // show status in header
-  showWiFiConnected(connected);
-
   if (connected) {
     // Here you could add sending a MQTT message. This message could be recognized by your home automation software.
     // When receiving this message, your home automation software could send the states of the smart home devices known to OMOTE.
-    // With that, OMOTE could show on startup the correct status of the smart home devices.
     //
     // Remark: in your home automation software, maybe add a short delay (e.g. 100-200 ms) between receiving this message and sending out the status of the smart home devices.
     // WiFi connection could be already available, but MQTT connection could be not completely ready. Just try what works for you.
@@ -319,7 +302,25 @@ void receiveWiFiConnected_cb(bool connected) {
   }
 }
 void receiveMQTTmessage_cb(std::string topic, std::string payload) {
-  showMQTTmessage(topic, payload);
+  omote_log_d("MQTT received, topic '%s', payload '%s'\r\n", topic.c_str(), payload.c_str());
 }
 
+#endif
+#if (ENABLE_OTA == 1)
+void otaStart_cb(void) {
+  setLastActivityTimestamp();
+  // Shut down background tasks that compete with the upload for WiFi / BLE radio / core 0 cycles.
+  // The device reboots at the end of OTA, so there is no resume path.
+  #if (ENABLE_KEYBOARD_BLE == 1)
+  keyboardBLE_disconnectAllClients();
+  keyboardBLE_stopAdvertising();
+  #endif
+}
+void otaProgress_cb(int pct) {
+  // Keep device awake during update
+  setLastActivityTimestamp();
+  if (pct < 0) {
+    omote_log_e("OTA: update failed\r\n");
+  }
+}
 #endif

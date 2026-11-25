@@ -7,8 +7,6 @@
 #include "devices/TV/device_samsungTV/device_samsungTV.h"
 #include "devices/AVreceiver/device_yamahaAmp/device_yamahaAmp.h"
 #include "applicationInternal/commandHandler.h"
-// guis
-#include "guis/gui_numpad.h"
 
 uint16_t SCENE_TV         ; //"Scene_tv"
 uint16_t SCENE_TV_FORCE   ; //"Scene_tv_force"
@@ -67,7 +65,6 @@ void scene_end_sequence_TV(void) {
 }
 
 std::string scene_name_TV = "TV";
-t_gui_list scene_TV_gui_list = {tabName_numpad};
 
 void register_scene_TV(void) {
   register_command(&SCENE_TV,       makeCommandData(SCENE, {scene_name_TV}));
@@ -80,7 +77,5 @@ void register_scene_TV(void) {
     & scene_end_sequence_TV,
     & key_repeatModes_TV,
     & key_commands_short_TV,
-    & key_commands_long_TV,
-    & scene_TV_gui_list,
-    SCENE_TV);
+    & key_commands_long_TV);
 }

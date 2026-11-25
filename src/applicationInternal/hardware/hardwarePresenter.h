@@ -3,23 +3,19 @@
 #include <list>
 #include <string>
 #include "applicationInternal/hardware/IRremoteProtocols.h"
-#include "applicationInternal/hardware/arduinoLayer.h"
 #include "applicationInternal/backlightSignal.h"
+#include <Arduino.h>
 
 // --- hardware general -------------------------------------------------------
 void init_hardware_general(void);
+// powers the peripherals and starts the I2C bus. Has to be called after init_sleep()
+void init_i2cBus(void);
 
 // --- preferences ------------------------------------------------------------
 void init_preferences(void);
 void save_preferences(void);
 std::string get_activeScene();
 void set_activeScene(std::string anActiveScene);
-std::string get_activeGUIname();
-void set_activeGUIname(std::string anActiveGUIname);
-int get_activeGUIlist();
-void set_activeGUIlist(int anActiveGUIlist);
-int get_lastActiveGUIlistIndex();
-void set_lastActiveGUIlistIndex(int aGUIlistIndex);
 BacklightSignalSettings get_backlightSignalSettings();
 void set_backlightSignalSettings(BacklightSignalSettings aSettings);
 
@@ -129,14 +125,6 @@ void consumerControlBLE_write(const MediaKeyReport value);
 void consumerControlBLE_longpress(const MediaKeyReport value);
 #endif
 
-// --- tft --------------------------------------------------------------------
-void update_backlightBrightness(void);
-uint8_t get_backlightBrightness();
-void set_backlightBrightness(uint8_t aBacklightBrightness);
-
-// --- lvgl -------------------------------------------------------------------
-void init_lvgl_hardware();
-
 // --- WiFi / MQTT ------------------------------------------------------------
 #if (ENABLE_WIFI_AND_MQTT == 1)
 void init_mqtt(void);
@@ -161,16 +149,8 @@ void telnet_close(void);
 
 // --- OTA --------------------------------------------------------------------
 #if (ENABLE_OTA == 1)
-typedef void (*tOtaStartCallback)(void);
-typedef void (*tOtaProgressCallback)(int pct);
-void
-set_ota_start_cb(tOtaStartCallback cb);
-void
-set_ota_progress_cb(tOtaProgressCallback cb);
-void
-init_ota(void);
-void
-ota_loop(void);
+void init_ota(void);
+void ota_loop(void);
 #endif
 
 // --- memory usage -----------------------------------------------------------
