@@ -59,6 +59,7 @@
 #include "scenes/scene_bluray.h"
 #include "scenes/scene_freebox.h"
 #include "scenes/scene_ps4.h"
+#include "scenes/scene_switch.h"
 //#include "scenes/scene_fireTV.h"
 //#include "scenes/scene_chromecast.h"
 //#include "scenes/scene_appleTV.h"
@@ -156,12 +157,13 @@ int main(int argc, char *argv[]) {
   register_scene_bluray();
   register_scene_freebox();
   register_scene_ps4();
+  register_scene_switch();
   // register_scene_fireTV();
   // register_scene_chromecast();
   // register_scene_appleTV();
   register_scene_allOff();
   // Only show these scenes on the sceneSelection gui. If you don't set this explicitely, by default all registered scenes are shown.
-  set_scenes_on_sceneSelectionGUI({scene_name_TV, scene_name_bluray, scene_name_freebox, scene_name_ps4});
+  set_scenes_on_sceneSelectionGUI({scene_name_TV, scene_name_bluray, scene_name_freebox, scene_name_ps4, scene_name_switch});
 
   // init GUI - will initialize tft, touch and lvgl
   init_gui(); // This has to come before any other i2c devices are initialized, otherwise the i2c bus will not be powered
@@ -209,7 +211,6 @@ int main(int argc, char *argv[]) {
   while (1)
     loop(&IMUTaskTimer, &updateStatusTimer);
   #endif
-
 }
 
 // Loop ------------------------------------------------------------------------------------------------------------------------------------
